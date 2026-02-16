@@ -14,15 +14,23 @@ import {
   type StructureData,
   type StructureType,
   type WarehouseData,
+  type WarehouseStatus,
   type ZoneData,
   type ZoneType,
 } from "./types";
 
 export function createWarehouseNode(data: {
   name: string;
+  code: string;
   width: number;
   height: number;
   length: number;
+  address: string;
+  managerName: string;
+  managerEmail: string;
+  managerPhone: string;
+  status: WarehouseStatus;
+  maxCapacity: number;
 }): Node<WarehouseData> {
   return {
     id: "warehouse",
@@ -30,10 +38,17 @@ export function createWarehouseNode(data: {
     position: { x: 50, y: 50 },
     data: {
       label: data.name,
+      code: data.code,
       width: data.width,
       height: data.height,
       length: data.length,
       color: "#F8FAFC",
+      address: data.address,
+      managerName: data.managerName,
+      managerEmail: data.managerEmail,
+      managerPhone: data.managerPhone,
+      status: data.status,
+      maxCapacity: data.maxCapacity,
     },
     draggable: false,
     style: {
@@ -135,6 +150,8 @@ export function createStructureNode(
     height?: number;
     levels?: number;
     partitions?: number;
+    levelCapacity?: number;
+    partitionCapacity?: number;
     color?: string;
   }
 ): Node<StructureData> {
@@ -165,6 +182,8 @@ export function createStructureNode(
       structureType,
       levels: formData?.levels || 1,
       partitions: formData?.partitions || 1,
+      levelCapacity: formData?.levelCapacity || 100,
+      partitionCapacity: formData?.partitionCapacity || 50,
     },
     parentId: "warehouse",
     extent: "parent" as const,
@@ -182,10 +201,13 @@ export function createStorageNode(
     height?: number;
     depth?: number;
     color?: string;
+    rackShelves?: number;
+    rackCapacityPerShelf?: number;
     shelfCount?: number;
     shelfCapacity?: number;
     binCapacity?: number;
     binSize?: BinSize;
+    floorCapacity?: number;
   }
 ): Node<StorageData> {
   const id = `${storageType}-${nanoid(6)}`;

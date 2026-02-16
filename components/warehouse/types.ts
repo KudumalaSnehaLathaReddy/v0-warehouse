@@ -22,12 +22,21 @@ export type StructureType = "warehouse" | "section" | "block";
 
 export type BinSize = "small" | "medium" | "large";
 
+export type WarehouseStatus = "active" | "inactive" | "maintenance" | "planned";
+
 export interface WarehouseData {
   label: string;
+  code: string;
   width: number;
   height: number;
   length: number;
   color: string;
+  address: string;
+  managerName: string;
+  managerEmail: string;
+  managerPhone: string;
+  status: WarehouseStatus;
+  maxCapacity: number;
 }
 
 export interface ElementData {
@@ -58,6 +67,8 @@ export interface StructureData {
   structureType: StructureType;
   levels: number;
   partitions: number;
+  levelCapacity: number;
+  partitionCapacity: number;
 }
 
 export interface StorageData {
@@ -68,12 +79,18 @@ export interface StorageData {
   color: string;
   storageType: "rack" | "shelf" | "bin" | "floor";
   parentZoneId: string;
+  // Rack capacity
+  rackShelves?: number;
+  rackCapacityPerShelf?: number;
   // Shelf capacity
   shelfCount?: number;
   shelfCapacity?: number;
   // Bin capacity
   binCapacity?: number;
   binSize?: BinSize;
+  // Floor capacity
+  floorCapacity?: number;
+  // General
   usedCapacity?: number;
 }
 
