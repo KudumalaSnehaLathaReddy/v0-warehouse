@@ -17,9 +17,22 @@ const STORAGE_ICONS: Record<string, string> = {
   rack: "RK",
   shelf: "SH",
   bin: "BN",
+  floor: "FL",
 };
 
 function StorageNodeComponent({ id, data, selected }: StorageNodeProps) {
+  const totalCapacity =
+    data.storageType === "shelf" && data.shelfCount && data.shelfCapacity
+      ? data.shelfCount * data.shelfCapacity
+      : data.storageType === "bin" && data.binCapacity
+        ? data.binCapacity
+        : null;
+
+  const usedPct =
+    totalCapacity && data.usedCapacity != null
+      ? Math.min(100, Math.round((data.usedCapacity / totalCapacity) * 100))
+      : null;
+
   return (
     <>
       <NodeResizer
@@ -38,10 +51,10 @@ function StorageNodeComponent({ id, data, selected }: StorageNodeProps) {
         isVisible={!!selected}
         position={Position.Top}
         align="center"
-        className="flex items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-lg"
+        className="flex items-center gap-1 rounded-md border border-border bg-card p-1 shadow-lg"
       >
         <button
-          className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           title="Edit"
           data-action="edit"
           data-node-id={id}
@@ -49,7 +62,7 @@ function StorageNodeComponent({ id, data, selected }: StorageNodeProps) {
           <Pencil size={12} />
         </button>
         <button
-          className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           title="Duplicate"
           data-action="duplicate"
           data-node-id={id}
@@ -57,7 +70,7 @@ function StorageNodeComponent({ id, data, selected }: StorageNodeProps) {
           <Copy size={12} />
         </button>
         <button
-          className="rounded p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+          className="rounded p-1 text-destructive/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
           title="Delete"
           data-action="delete"
           data-node-id={id}
@@ -66,20 +79,46 @@ function StorageNodeComponent({ id, data, selected }: StorageNodeProps) {
         </button>
       </NodeToolbar>
       <div
-        className="flex h-full w-full items-center justify-center rounded border"
+        className="flex h-full w-full flex-col items-center justify-center rounded border"
         style={{
           backgroundColor: data.color,
           borderColor: selected ? "#2563EB" : "rgba(0,0,0,0.15)",
         }}
       >
         <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[9px] font-bold text-slate-600">
+          <span className="text-[9px] font-bold text-foreground/70">
             {STORAGE_ICONS[data.storageType]}
           </span>
-          <span className="max-w-full truncate text-[8px] text-slate-500">
+          <span className="max-w-full truncate px-1 text-[8px] text-foreground/60">
             {data.label}
           </span>
+          {data.storageType === "bin" && data.binSize && (
+            <span className="rounded-sm bg-foreground/5 px-1 text-[7px] font-medium text-muted-foreground">
+              {data.binSize}
+            </span>
+          )}
         </div>
+        {totalCapacity != null && (
+          <div className="mt-1 flex w-4/5 flex-col items-center gap-0.5">
+            <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/10">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${usedPct || 0}%`,
+                  backgroundColor:
+                    (usedPct || 0) > 80
+                      ? "#EF4444"
+                      : (usedPct || 0) > 50
+                        ? "#F59E0B"
+                        : "#22C55E",
+                }}
+              />
+            </div>
+            <span className="text-[7px] text-muted-foreground">
+              {data.usedCapacity || 0}/{totalCapacity}
+            </span>
+          </div>
+        )}
       </div>
     </>
   );

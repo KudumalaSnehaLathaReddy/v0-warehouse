@@ -1,12 +1,18 @@
 import { nanoid } from "nanoid";
 import type { Node } from "@xyflow/react";
 import {
+  BIN_CAPACITIES,
   ELEMENT_COLORS,
   GRID_SIZE,
   STORAGE_COLORS,
+  STRUCTURE_COLORS,
   ZONE_COLORS,
+  ZONE_LABELS,
+  type BinSize,
   type ElementData,
   type StorageData,
+  type StructureData,
+  type StructureType,
   type WarehouseData,
   type ZoneData,
   type ZoneType,
@@ -39,7 +45,7 @@ export function createWarehouseNode(data: {
 
 export function createElementNode(
   elementType: ElementData["elementType"],
-  parentPosition: { x: number; y: number },
+  _parentPosition: { x: number; y: number },
   parentSize: { width: number; height: number }
 ): Node<ElementData> {
   const id = `${elementType}-${nanoid(6)}`;
@@ -75,11 +81,21 @@ export function createElementNode(
 
 export function createZoneNode(
   zoneType: ZoneType,
-  parentSize: { width: number; height: number }
+  parentSize: { width: number; height: number },
+  formData?: {
+    name?: string;
+    width?: number;
+    height?: number;
+    length?: number;
+    color?: string;
+    temperatureMin?: number;
+    temperatureMax?: number;
+  }
 ): Node<ZoneData> {
   const id = `zone-${nanoid(6)}`;
-  const w = 250;
-  const h = 200;
+  const w = formData?.width || 250;
+  const h = formData?.height || 200;
+  const l = formData?.length || 100;
 
   return {
     id,
@@ -95,16 +111,60 @@ export function createZoneNode(
       ),
     },
     data: {
-      label:
-        zoneType === "cold-storage"
-          ? "Cold Storage"
-          : zoneType === "raw-materials"
-            ? "Raw Materials"
-            : "Finished Goods",
+      label: formData?.name || ZONE_LABELS[zoneType],
       width: w,
       height: h,
-      color: ZONE_COLORS[zoneType],
+      length: l,
+      color: formData?.color || ZONE_COLORS[zoneType],
       zoneType,
+      temperatureMin: formData?.temperatureMin,
+      temperatureMax: formData?.temperatureMax,
+    },
+    parentId: "warehouse",
+    extent: "parent" as const,
+    style: { width: w, height: h },
+  };
+}
+
+export function createStructureNode(
+  structureType: StructureType,
+  parentSize: { width: number; height: number },
+  formData?: {
+    name?: string;
+    width?: number;
+    height?: number;
+    levels?: number;
+    partitions?: number;
+    color?: string;
+  }
+): Node<StructureData> {
+  const id = `structure-${nanoid(6)}`;
+  const w = formData?.width || 200;
+  const h = formData?.height || 150;
+
+  return {
+    id,
+    type: "structure",
+    position: {
+      x: Math.min(
+        Math.round((parentSize.width / 2 - w / 2) / GRID_SIZE) * GRID_SIZE,
+        parentSize.width - w
+      ),
+      y: Math.min(
+        Math.round((parentSize.height / 2 - h / 2) / GRID_SIZE) * GRID_SIZE,
+        parentSize.height - h
+      ),
+    },
+    data: {
+      label:
+        formData?.name ||
+        structureType.charAt(0).toUpperCase() + structureType.slice(1),
+      width: w,
+      height: h,
+      color: formData?.color || STRUCTURE_COLORS[structureType],
+      structureType,
+      levels: formData?.levels || 1,
+      partitions: formData?.partitions || 1,
     },
     parentId: "warehouse",
     extent: "parent" as const,
@@ -115,11 +175,31 @@ export function createZoneNode(
 export function createStorageNode(
   storageType: StorageData["storageType"],
   parentZoneId: string,
-  parentSize: { width: number; height: number }
+  parentSize: { width: number; height: number },
+  formData?: {
+    name?: string;
+    width?: number;
+    height?: number;
+    depth?: number;
+    color?: string;
+    shelfCount?: number;
+    shelfCapacity?: number;
+    binCapacity?: number;
+    binSize?: BinSize;
+  }
 ): Node<StorageData> {
   const id = `${storageType}-${nanoid(6)}`;
-  const w = storageType === "rack" ? 100 : storageType === "shelf" ? 80 : 50;
-  const h = storageType === "rack" ? 60 : storageType === "shelf" ? 40 : 40;
+  const defaults: Record<string, { w: number; h: number }> = {
+    rack: { w: 100, h: 60 },
+    shelf: { w: 80, h: 40 },
+    bin: { w: 50, h: 40 },
+    floor: { w: 120, h: 80 },
+  };
+  const d = defaults[storageType] || { w: 80, h: 50 };
+  const w = formData?.width || d.w;
+  const h = formData?.height || d.h;
+
+  const binSize = formData?.binSize || "medium";
 
   return {
     id,
@@ -135,12 +215,24 @@ export function createStorageNode(
       ),
     },
     data: {
-      label: storageType.charAt(0).toUpperCase() + storageType.slice(1),
+      label:
+        formData?.name ||
+        storageType.charAt(0).toUpperCase() + storageType.slice(1),
       width: w,
       height: h,
-      color: STORAGE_COLORS[storageType],
+      depth: formData?.depth || 50,
+      color: formData?.color || STORAGE_COLORS[storageType],
       storageType,
       parentZoneId,
+      shelfCount: storageType === "shelf" ? formData?.shelfCount || 4 : undefined,
+      shelfCapacity:
+        storageType === "shelf" ? formData?.shelfCapacity || 100 : undefined,
+      binCapacity:
+        storageType === "bin"
+          ? formData?.binCapacity || BIN_CAPACITIES[binSize]
+          : undefined,
+      binSize: storageType === "bin" ? binSize : undefined,
+      usedCapacity: 0,
     },
     parentId: parentZoneId,
     extent: "parent" as const,
@@ -150,4 +242,16 @@ export function createStorageNode(
 
 export function snapToGrid(value: number): number {
   return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
+export function checkOverlap(
+  nodeA: { x: number; y: number; width: number; height: number },
+  nodeB: { x: number; y: number; width: number; height: number }
+): boolean {
+  return !(
+    nodeA.x + nodeA.width <= nodeB.x ||
+    nodeB.x + nodeB.width <= nodeA.x ||
+    nodeA.y + nodeA.height <= nodeB.y ||
+    nodeB.y + nodeB.height <= nodeA.y
+  );
 }

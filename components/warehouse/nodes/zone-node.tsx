@@ -8,12 +8,14 @@ import {
   Position,
 } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
-import { Copy, Trash2, Pencil, Plus } from "lucide-react";
+import { Copy, Trash2, Pencil, Plus, Thermometer } from "lucide-react";
 import { ZONE_LABELS, type ZoneData } from "../types";
 
 type ZoneNodeProps = NodeProps<Node<ZoneData>>;
 
 function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
+  const isColdStorage = data.zoneType === "cold-storage";
+
   return (
     <>
       <NodeResizer
@@ -32,10 +34,10 @@ function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
         isVisible={!!selected}
         position={Position.Top}
         align="center"
-        className="flex items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-lg"
+        className="flex items-center gap-1 rounded-md border border-border bg-card p-1 shadow-lg"
       >
         <button
-          className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           title="Edit"
           data-action="edit"
           data-node-id={id}
@@ -43,7 +45,7 @@ function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
           <Pencil size={13} />
         </button>
         <button
-          className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           title="Duplicate"
           data-action="duplicate"
           data-node-id={id}
@@ -51,16 +53,16 @@ function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
           <Copy size={13} />
         </button>
         <button
-          className="rounded p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+          className="rounded p-1 text-destructive/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
           title="Delete"
           data-action="delete"
           data-node-id={id}
         >
           <Trash2 size={13} />
         </button>
-        <div className="mx-1 h-4 w-px bg-slate-200" />
+        <div className="mx-1 h-4 w-px bg-border" />
         <button
-          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
+          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           title="Add Rack"
           data-action="add-rack"
           data-node-id={id}
@@ -68,7 +70,7 @@ function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
           <Plus size={11} /> Rack
         </button>
         <button
-          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
+          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           title="Add Shelf"
           data-action="add-shelf"
           data-node-id={id}
@@ -76,12 +78,20 @@ function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
           <Plus size={11} /> Shelf
         </button>
         <button
-          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
+          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           title="Add Bin"
           data-action="add-bin"
           data-node-id={id}
         >
           <Plus size={11} /> Bin
+        </button>
+        <button
+          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          title="Add Floor"
+          data-action="add-floor"
+          data-node-id={id}
+        >
+          <Plus size={11} /> Floor
         </button>
       </NodeToolbar>
       <div
@@ -91,17 +101,24 @@ function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
           borderColor: selected ? "#2563EB" : "rgba(0,0,0,0.12)",
         }}
       >
-        <div className="flex items-center justify-between border-b border-slate-200/50 px-2 py-1">
-          <span className="text-[11px] font-semibold text-slate-700">
+        <div className="flex items-center justify-between border-b px-2 py-1" style={{ borderColor: "rgba(0,0,0,0.08)" }}>
+          <span className="text-[11px] font-semibold text-foreground">
             {data.label}
           </span>
-          <span className="rounded bg-slate-800/5 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">
+          <span className="rounded bg-foreground/5 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
             {ZONE_LABELS[data.zoneType]}
           </span>
         </div>
-        <div className="flex flex-1 items-end justify-end p-1">
-          <span className="text-[9px] text-slate-400">
+        <div className="flex flex-1 items-end justify-between p-1.5">
+          {isColdStorage && data.temperatureMin != null && data.temperatureMax != null && (
+            <span className="flex items-center gap-0.5 text-[9px] text-blue-600">
+              <Thermometer size={9} />
+              {data.temperatureMin}~{data.temperatureMax}C
+            </span>
+          )}
+          <span className="ml-auto text-[9px] text-muted-foreground">
             {data.width}x{data.height}
+            {data.length ? `x${data.length}` : ""}
           </span>
         </div>
       </div>
