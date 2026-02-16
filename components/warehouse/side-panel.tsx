@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Download,
   Upload,
+  Layers,
 } from "lucide-react";
 import { useState } from "react";
 import { WarehouseForm } from "./forms/warehouse-form";
@@ -20,6 +21,7 @@ import { StorageForm } from "./forms/storage-form";
 import { NodeEditForm } from "./forms/node-edit-form";
 import type {
   WarehouseData,
+  ElementData,
   ZoneType,
   StructureType,
   StorageData,
@@ -28,7 +30,7 @@ import type {
   BinSize,
 } from "./types";
 
-type SidebarSection = "zones" | "structures" | "storage" | "settings" | null;
+type SidebarSection = "elements" | "zones" | "structures" | "storage" | "settings" | null;
 
 interface SidePanelProps {
   isOpen: boolean;
@@ -43,6 +45,7 @@ interface SidePanelProps {
     length: number;
   }) => void;
   onUpdateNode: (id: string, data: Record<string, unknown>) => void;
+  onAddElement: (type: ElementData["elementType"]) => void;
   onAddZone: (
     type: ZoneType,
     formData?: {
@@ -95,6 +98,7 @@ export function SidePanel({
   isEditingWarehouse,
   onCreateWarehouse,
   onUpdateNode,
+  onAddElement,
   onAddZone,
   onAddStructure,
   onAddStorage,
@@ -265,6 +269,48 @@ export function SidePanel({
 
             {/* Accordion sections */}
             <div className="flex flex-col">
+              {/* Elements (Wall, Gutter, Walkway, Gate) */}
+              <button
+                onClick={() => toggleSection("elements")}
+                className="flex items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-accent/50"
+              >
+                <Layers size={16} className="text-slate-600" />
+                <span className="flex-1 text-sm font-medium text-foreground">
+                  Elements
+                </span>
+                {openSection === "elements" ? (
+                  <ChevronDown size={14} className="text-muted-foreground" />
+                ) : (
+                  <ChevronRight size={14} className="text-muted-foreground" />
+                )}
+              </button>
+              {openSection === "elements" && (
+                <div className="border-b border-border bg-accent/20 p-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    {(
+                      [
+                        { type: "wall", label: "Wall", color: "#94A3B8" },
+                        { type: "gutter", label: "Gutter", color: "#CBD5E1" },
+                        { type: "walkway", label: "Walkway", color: "#E2E8F0" },
+                        { type: "gate", label: "Gate", color: "#FCA5A5" },
+                      ] as const
+                    ).map((el) => (
+                      <button
+                        key={el.type}
+                        onClick={() => onAddElement(el.type)}
+                        className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                      >
+                        <span
+                          className="inline-block h-3 w-3 rounded-sm"
+                          style={{ backgroundColor: el.color }}
+                        />
+                        {el.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Create Zone */}
               <button
                 onClick={() => toggleSection("zones")}

@@ -25,6 +25,7 @@ import { SidePanel } from "./side-panel";
 
 import {
   GRID_SIZE,
+  type ElementData,
   type StorageData,
   type WarehouseData,
   type ZoneType,
@@ -33,6 +34,7 @@ import {
 } from "./types";
 import {
   createWarehouseNode,
+  createElementNode,
   createZoneNode,
   createStorageNode,
   createStructureNode,
@@ -100,6 +102,22 @@ export function WarehouseCanvas() {
       }
     },
     [warehouseExists, setNodes]
+  );
+
+  // Add internal elements (walls, gutters, walkways, gates)
+  const handleAddElement = useCallback(
+    (type: ElementData["elementType"]) => {
+      if (!warehouseNode) return;
+      const wStyle = warehouseNode.style || {};
+      const pw = (wStyle.width as number) || 800;
+      const ph = (wStyle.height as number) || 600;
+      const newNode = createElementNode(type, warehouseNode.position, {
+        width: pw,
+        height: ph,
+      });
+      setNodes((nds) => [...nds, newNode]);
+    },
+    [warehouseNode, setNodes]
   );
 
   // Add zones with optional form data
@@ -419,6 +437,7 @@ export function WarehouseCanvas() {
         isEditingWarehouse={isEditingWarehouse}
         onCreateWarehouse={handleCreateWarehouse}
         onUpdateNode={handleUpdateNode}
+        onAddElement={handleAddElement}
         onAddZone={handleAddZone}
         onAddStructure={handleAddStructure}
         onAddStorage={handleAddStorage}
