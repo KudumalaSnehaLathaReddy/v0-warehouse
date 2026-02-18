@@ -19,24 +19,20 @@ import { Menu, X } from "lucide-react";
 import { WarehouseNode } from "./nodes/warehouse-node";
 import { ElementNode } from "./nodes/element-node";
 import { ZoneNode } from "./nodes/zone-node";
-import { StorageNode } from "./nodes/storage-node";
 import { StructureNode } from "./nodes/structure-node";
 import { SidePanel } from "./side-panel";
 
 import {
   GRID_SIZE,
   type ElementData,
-  type StorageData,
   type WarehouseData,
   type ZoneType,
   type StructureType,
-  type BinSize,
 } from "./types";
 import {
   createWarehouseNode,
   createElementNode,
   createZoneNode,
-  createStorageNode,
   createStructureNode,
 } from "./utils";
 
@@ -44,7 +40,6 @@ const nodeTypes: NodeTypes = {
   warehouse: WarehouseNode,
   element: ElementNode,
   zone: ZoneNode,
-  storage: StorageNode,
   structure: StructureNode,
 };
 
@@ -150,10 +145,10 @@ export function WarehouseCanvas() {
       type: StructureType,
       formData?: {
         name?: string;
+        code?: string;
         width?: number;
         height?: number;
-        levels?: number;
-        partitions?: number;
+        levelConfigs?: Array<{ name: string; code: string; height: number; partitionCount: number }>;
         color?: string;
       }
     ) => {
@@ -171,38 +166,7 @@ export function WarehouseCanvas() {
     [warehouseNode, setNodes]
   );
 
-  // Add storage to a zone
-  const handleAddStorage = useCallback(
-    (
-      storageType: StorageData["storageType"],
-      zoneId: string,
-      formData?: {
-        name?: string;
-        width?: number;
-        height?: number;
-        depth?: number;
-        color?: string;
-        shelfCount?: number;
-        shelfCapacity?: number;
-        binCapacity?: number;
-        binSize?: BinSize;
-      }
-    ) => {
-      const zone = nodes.find((n) => n.id === zoneId);
-      if (!zone) return;
-      const zStyle = zone.style || {};
-      const pw = (zStyle.width as number) || 250;
-      const ph = (zStyle.height as number) || 200;
-      const newNode = createStorageNode(
-        storageType,
-        zoneId,
-        { width: pw, height: ph },
-        formData
-      );
-      setNodes((nds) => [...nds, newNode]);
-    },
-    [nodes, setNodes]
-  );
+
 
   // Update any node's data
   const handleUpdateNode = useCallback(
@@ -339,18 +303,6 @@ export function WarehouseCanvas() {
           case "rotate":
             handleRotate(nodeId);
             return;
-          case "add-rack":
-            handleAddStorage("rack", nodeId);
-            return;
-          case "add-shelf":
-            handleAddStorage("shelf", nodeId);
-            return;
-          case "add-bin":
-            handleAddStorage("bin", nodeId);
-            return;
-          case "add-floor":
-            handleAddStorage("floor", nodeId);
-            return;
         }
       }
       if (node.type === "warehouse") {
@@ -367,7 +319,6 @@ export function WarehouseCanvas() {
       handleDuplicate,
       handleDelete,
       handleRotate,
-      handleAddStorage,
       sidebarOpen,
     ]
   );
@@ -440,7 +391,6 @@ export function WarehouseCanvas() {
         onAddElement={handleAddElement}
         onAddZone={handleAddZone}
         onAddStructure={handleAddStructure}
-        onAddStorage={handleAddStorage}
         onCloseEdit={handleCloseEdit}
         onExportJSON={handleExportJSON}
         onImportJSON={handleImportJSON}

@@ -8,10 +8,10 @@ interface StructureFormProps {
   onSubmit: (data: {
     structureType: StructureType;
     name: string;
+    code: string;
     width: number;
     height: number;
-    levels: number;
-    partitions: number;
+    levelConfigs: Array<{ name: string; code: string; height: number; partitionCount: number }>;
     color: string;
   }) => void;
   onClose: () => void;
@@ -30,10 +30,17 @@ export function StructureForm({
     initialData?.structureType || "section"
   );
   const [name, setName] = useState(initialData?.label || "");
+  const [code, setCode] = useState(initialData?.code || "");
   const [width, setWidth] = useState(initialData?.width || 200);
   const [height, setHeight] = useState(initialData?.height || 150);
-  const [levels, setLevels] = useState(initialData?.levels || 1);
-  const [partitions, setPartitions] = useState(initialData?.partitions || 1);
+  const [levelConfigs, setLevelConfigs] = useState<Array<{ name: string; code: string; height: number; partitionCount: number }>>(
+    initialData?.levels.map((l) => ({
+      name: l.name,
+      code: l.code,
+      height: l.height,
+      partitionCount: l.partitions.length,
+    })) || [{ name: "Level 1", code: "L1", height: 50, partitionCount: 3 }]
+  );
   const [color, setColor] = useState(
     initialData?.color || STRUCTURE_COLORS["section"]
   );
@@ -42,10 +49,17 @@ export function StructureForm({
     if (initialData) {
       setStructureType(initialData.structureType);
       setName(initialData.label);
+      setCode(initialData.code);
       setWidth(initialData.width);
       setHeight(initialData.height);
-      setLevels(initialData.levels);
-      setPartitions(initialData.partitions);
+      setLevelConfigs(
+        initialData.levels.map((l) => ({
+          name: l.name,
+          code: l.code,
+          height: l.height,
+          partitionCount: l.partitions.length,
+        }))
+      );
       setColor(initialData.color);
     }
   }, [initialData]);
@@ -54,16 +68,43 @@ export function StructureForm({
     if (!isEdit) {
       setColor(STRUCTURE_COLORS[structureType]);
       setName(structureType.charAt(0).toUpperCase() + structureType.slice(1));
+      if (!code) {
+        setCode(`STR-${structureType.slice(0, 3).toUpperCase()}`);
+      }
     }
-  }, [structureType, isEdit]);
+  }, [structureType, isEdit, code]);
+
+  const handleAddLevel = () => {
+    setLevelConfigs([
+      ...levelConfigs,
+      {
+        name: `Level ${levelConfigs.length + 1}`,
+        code: `L${levelConfigs.length + 1}`,
+        height: 50,
+        partitionCount: 3,
+      },
+    ]);
+  };
+
+  const handleRemoveLevel = (index: number) => {
+    if (levelConfigs.length > 1) {
+      setLevelConfigs(levelConfigs.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleUpdateLevel = (index: number, field: string, value: unknown) => {
+    const updated = [...levelConfigs];
+    updated[index] = { ...updated[index], [field]: value };
+    setLevelConfigs(updated);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ structureType, name, width, height, levels, partitions, color });
+    onSubmit({ structureType, name, code, width, height, levelConfigs, color });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-h-96 overflow-y-auto">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground">
           {isEdit ? "Edit Structure" : "Create Structure"}
@@ -106,6 +147,17 @@ export function StructureForm({
         />
       </div>
 
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Code</label>
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+          required
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-2">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-muted-foreground">W</label>
@@ -131,38 +183,73 @@ export function StructureForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Levels
-          </label>
-          <input
-            type="number"
-            value={levels}
-            onChange={(e) => setLevels(Math.max(1, Number(e.target.value)))}
-            min={1}
-            max={10}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-            required
-          />
+      {/* Levels Configuration */}
+      <div className="flex flex-col gap-2 border-t pt-2">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-muted-foreground">Levels</label>
+          <button
+            type="button"
+            onClick={handleAddLevel}
+            className="rounded px-2 py-1 text-[10px] bg-primary/20 text-primary hover:bg-primary/30 font-medium"
+          >
+            + Add Level
+          </button>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Partitions
-          </label>
-          <input
-            type="number"
-            value={partitions}
-            onChange={(e) => setPartitions(Math.max(1, Number(e.target.value)))}
-            min={1}
-            max={12}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-            required
-          />
-        </div>
+        {levelConfigs.map((level, idx) => (
+          <div key={idx} className="flex flex-col gap-1.5 p-2 rounded border border-dashed border-border/50 bg-muted/20">
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Level name"
+                value={level.name}
+                onChange={(e) => handleUpdateLevel(idx, "name", e.target.value)}
+                className="rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring"
+              />
+              <input
+                type="text"
+                placeholder="Code"
+                value={level.code}
+                onChange={(e) => handleUpdateLevel(idx, "code", e.target.value)}
+                className="rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-muted-foreground">Height</label>
+                <input
+                  type="number"
+                  value={level.height}
+                  onChange={(e) => handleUpdateLevel(idx, "height", Math.max(20, Number(e.target.value)))}
+                  min={20}
+                  className="rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-muted-foreground">Partitions</label>
+                <input
+                  type="number"
+                  value={level.partitionCount}
+                  onChange={(e) => handleUpdateLevel(idx, "partitionCount", Math.max(1, Number(e.target.value)))}
+                  min={1}
+                  max={12}
+                  className="rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            </div>
+            {levelConfigs.length > 1 && (
+              <button
+                type="button"
+                onClick={() => handleRemoveLevel(idx)}
+                className="rounded px-2 py-1 text-[10px] bg-destructive/10 text-destructive hover:bg-destructive/20 font-medium"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 border-t pt-2">
         <label className="text-xs font-medium text-muted-foreground">Color</label>
         <div className="flex items-center gap-2">
           <input

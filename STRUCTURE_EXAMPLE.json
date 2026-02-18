@@ -1,0 +1,100 @@
+{
+  "id": "structure-abc123",
+  "type": "structure",
+  "position": {
+    "x": 100,
+    "y": 100
+  },
+  "data": {
+    "label": "Storage Section A",
+    "code": "SEC-A",
+    "width": 300,
+    "height": 200,
+    "color": "#E8F0FE",
+    "structureType": "section",
+    "levels": [
+      {
+        "id": "level-l1",
+        "name": "Level 1",
+        "code": "L1",
+        "height": 50,
+        "partitions": [
+          {
+            "id": "partition-l1p1",
+            "name": "P1",
+            "code": "P1",
+            "width": 75,
+            "max_capacity": 100,
+            "used_capacity": 30,
+            "product_name": "Widget A",
+            "product_type": "Electronics",
+            "product_value": 5000,
+            "product_uom": "units"
+          },
+          {
+            "id": "partition-l1p2",
+            "name": "P2",
+            "code": "P2",
+            "width": 75,
+            "max_capacity": 100,
+            "used_capacity": 65,
+            "product_name": "Widget B",
+            "product_type": "Electronics",
+            "product_value": 3000,
+            "product_uom": "units"
+          },
+          {
+            "id": "partition-l1p3",
+            "name": "P3",
+            "code": "P3",
+            "width": 75,
+            "max_capacity": 100,
+            "used_capacity": 95,
+            "product_name": "Widget C",
+            "product_type": "Electronics",
+            "product_value": 8000,
+            "product_uom": "units"
+          }
+        ]
+      },
+      {
+        "id": "level-l2",
+        "name": "Level 2",
+        "code": "L2",
+        "height": 60,
+        "partitions": [
+          {
+            "id": "partition-l2p1",
+            "name": "P1",
+            "code": "P1",
+            "width": 100,
+            "max_capacity": 150,
+            "used_capacity": 45,
+            "product_name": "Component X",
+            "product_type": "Parts",
+            "product_value": 2000,
+            "product_uom": "pieces"
+          },
+          {
+            "id": "partition-l2p2",
+            "name": "P2",
+            "code": "P2",
+            "width": 100,
+            "max_capacity": 150,
+            "used_capacity": 120,
+            "product_name": "Component Y",
+            "product_type": "Parts",
+            "product_value": 1500,
+            "product_uom": "pieces"
+          }
+        ]
+      }
+    ]
+  },
+  "parentId": "warehouse",
+  "extent": "parent",
+  "style": {
+    "width": 300,
+    "height": 200
+  }
+}

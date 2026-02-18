@@ -35,9 +35,7 @@ export function NodeEditForm({ node, onUpdate, onClose }: NodeEditFormProps) {
       ? ((node.data as Record<string, unknown>).elementType as string || "Element")
       : nodeType === "zone"
         ? ((node.data as Record<string, unknown>).zoneType as string || "Zone")
-        : nodeType === "storage"
-          ? ((node.data as Record<string, unknown>).storageType as string || "Storage")
-          : nodeType;
+        : nodeType;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">

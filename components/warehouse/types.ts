@@ -5,11 +5,7 @@ export type WarehouseNodeType =
   | "walkway"
   | "gate"
   | "zone"
-  | "structure"
-  | "rack"
-  | "shelf"
-  | "bin"
-  | "floor";
+  | "structure";
 
 export type ZoneType =
   | "cold-storage"
@@ -19,8 +15,6 @@ export type ZoneType =
   | "dispatch-area";
 
 export type StructureType = "warehouse" | "section" | "block";
-
-export type BinSize = "small" | "medium" | "large";
 
 export type WarehouseStatus = "active" | "inactive" | "maintenance" | "planned";
 
@@ -59,39 +53,35 @@ export interface ZoneData {
   temperatureMax?: number;
 }
 
+export interface Partition {
+  id: string;
+  name: string;
+  code: string;
+  width: number;
+  max_capacity: number;
+  used_capacity: number;
+  product_name?: string;
+  product_type?: string;
+  product_value?: number;
+  product_uom?: string;
+}
+
+export interface Level {
+  id: string;
+  name: string;
+  code: string;
+  height: number;
+  partitions: Partition[];
+}
+
 export interface StructureData {
   label: string;
+  code: string;
   width: number;
   height: number;
   color: string;
   structureType: StructureType;
-  levels: number;
-  partitions: number;
-  levelCapacity: number;
-  partitionCapacity: number;
-}
-
-export interface StorageData {
-  label: string;
-  width: number;
-  height: number;
-  depth: number;
-  color: string;
-  storageType: "rack" | "shelf" | "bin" | "floor";
-  parentZoneId: string;
-  // Rack capacity
-  rackShelves?: number;
-  rackCapacityPerShelf?: number;
-  // Shelf capacity
-  shelfCount?: number;
-  shelfCapacity?: number;
-  // Bin capacity
-  binCapacity?: number;
-  binSize?: BinSize;
-  // Floor capacity
-  floorCapacity?: number;
-  // General
-  usedCapacity?: number;
+  levels: Level[];
 }
 
 export const ZONE_COLORS: Record<ZoneType, string> = {
@@ -117,23 +107,10 @@ export const ELEMENT_COLORS: Record<string, string> = {
   gate: "#FCA5A5",
 };
 
-export const STORAGE_COLORS: Record<string, string> = {
-  rack: "#C4B5FD",
-  shelf: "#A5B4FC",
-  bin: "#93C5FD",
-  floor: "#FDE68A",
-};
-
 export const STRUCTURE_COLORS: Record<StructureType, string> = {
   warehouse: "#F1F5F9",
   section: "#E8F0FE",
   block: "#FFF7ED",
-};
-
-export const BIN_CAPACITIES: Record<BinSize, number> = {
-  small: 10,
-  medium: 50,
-  large: 100,
 };
 
 export const GRID_SIZE = 10;

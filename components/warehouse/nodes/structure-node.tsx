@@ -14,7 +14,13 @@ import type { StructureData } from "../types";
 type StructureNodeProps = NodeProps<Node<StructureData>>;
 
 function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
-  const { levels, partitions } = data;
+  const { levels } = data;
+
+  const getCapacityColor = (fillPercentage: number): string => {
+    if (fillPercentage < 33) return "#10b981"; // green
+    if (fillPercentage < 66) return "#f59e0b"; // amber
+    return "#ef4444"; // red
+  };
 
   return (
     <>
@@ -76,32 +82,49 @@ function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
             {data.structureType}
           </span>
         </div>
-        {/* Visual grid of levels x partitions */}
+        {/* Visual grid of levels with partitions showing capacity fill */}
         <div className="flex flex-1 flex-col gap-px p-1">
-          {Array.from({ length: Math.min(levels, 6) }).map((_, levelIdx) => (
-            <div key={levelIdx} className="flex flex-1 gap-px">
-              {Array.from({ length: Math.min(partitions, 8) }).map(
-                (_, partIdx) => (
+          {levels.slice(0, 6).map((level, levelIdx) => (
+            <div key={level.id} className="flex flex-1 gap-px">
+              {level.partitions.slice(0, 8).map((partition) => {
+                const fillPercentage = (partition.used_capacity / partition.max_capacity) * 100;
+                const fillHeight = Math.round((fillPercentage / 100) * 100);
+
+                return (
                   <div
-                    key={partIdx}
-                    className="flex flex-1 items-center justify-center rounded-sm border border-dashed"
+                    key={partition.id}
+                    className="relative flex flex-1 items-end rounded-sm border border-solid overflow-hidden"
                     style={{
-                      borderColor: "rgba(0,0,0,0.12)",
-                      backgroundColor: "rgba(255,255,255,0.5)",
+                      borderColor: "rgba(0,0,0,0.2)",
+                      backgroundColor: "rgba(255,255,255,0.3)",
                     }}
+                    title={`${partition.name}: ${partition.used_capacity}/${partition.max_capacity}`}
                   >
-                    <span className="text-[7px] text-muted-foreground">
-                      {levelIdx + 1}-{partIdx + 1}
-                    </span>
+                    {/* Capacity fill indicator - fills from bottom */}
+                    <div
+                      style={{
+                        width: "100%",
+                        height: `${fillHeight}%`,
+                        backgroundColor: getCapacityColor(fillPercentage),
+                        opacity: 0.7,
+                        transition: "all 0.2s ease-out",
+                      }}
+                    />
+                    {/* Partition label */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[6px] font-medium text-foreground drop-shadow-sm">
+                        {partition.code}
+                      </span>
+                    </div>
                   </div>
-                )
-              )}
+                );
+              })}
             </div>
           ))}
         </div>
         <div className="flex items-center justify-between border-t px-1.5 py-0.5" style={{ borderColor: "rgba(0,0,0,0.08)" }}>
           <span className="text-[8px] text-muted-foreground">
-            L{levels} x P{partitions}
+            {levels.length} levels
           </span>
           <span className="text-[8px] text-muted-foreground">
             {data.width}x{data.height}

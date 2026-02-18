@@ -5,7 +5,6 @@ import {
   Warehouse,
   MapPin,
   Building2,
-  Archive,
   Settings,
   ChevronDown,
   ChevronRight,
@@ -17,20 +16,17 @@ import { useState } from "react";
 import { WarehouseForm } from "./forms/warehouse-form";
 import { ZoneForm } from "./forms/zone-form";
 import { StructureForm } from "./forms/structure-form";
-import { StorageForm } from "./forms/storage-form";
 import { NodeEditForm } from "./forms/node-edit-form";
 import type {
   WarehouseData,
   ElementData,
   ZoneType,
   StructureType,
-  StorageData,
   ZoneData,
   StructureData,
-  BinSize,
 } from "./types";
 
-type SidebarSection = "elements" | "zones" | "structures" | "storage" | "settings" | null;
+type SidebarSection = "elements" | "zones" | "structures" | "settings" | null;
 
 interface SidePanelProps {
   isOpen: boolean;
@@ -69,21 +65,6 @@ interface SidePanelProps {
       color?: string;
     }
   ) => void;
-  onAddStorage: (
-    type: StorageData["storageType"],
-    zoneId: string,
-    formData?: {
-      name?: string;
-      width?: number;
-      height?: number;
-      depth?: number;
-      color?: string;
-      shelfCount?: number;
-      shelfCapacity?: number;
-      binCapacity?: number;
-      binSize?: BinSize;
-    }
-  ) => void;
   onCloseEdit: () => void;
   onExportJSON: () => void;
   onImportJSON: (file: File) => void;
@@ -101,7 +82,6 @@ export function SidePanel({
   onAddElement,
   onAddZone,
   onAddStructure,
-  onAddStorage,
   onCloseEdit,
   onExportJSON,
   onImportJSON,
@@ -110,14 +90,11 @@ export function SidePanel({
   const [openSection, setOpenSection] = useState<SidebarSection>(null);
   const [showZoneForm, setShowZoneForm] = useState(false);
   const [showStructureForm, setShowStructureForm] = useState(false);
-  const [showStorageForm, setShowStorageForm] = useState(false);
-  const [storageTargetZone, setStorageTargetZone] = useState<string>("");
 
   const toggleSection = (section: SidebarSection) => {
     setOpenSection((prev) => (prev === section ? null : section));
     setShowZoneForm(false);
     setShowStructureForm(false);
-    setShowStorageForm(false);
   };
 
   const isEditing =
@@ -127,7 +104,6 @@ export function SidePanel({
   const selectedNodeData = selectedNode?.data as Record<string, unknown> | undefined;
   const isZoneEdit = selectedNode?.type === "zone";
   const isStructureEdit = selectedNode?.type === "structure";
-  const isStorageEdit = selectedNode?.type === "storage";
 
   return (
     <aside
@@ -191,38 +167,25 @@ export function SidePanel({
               onSubmit={(d) => {
                 onUpdateNode(selectedNode.id, {
                   label: d.name,
+                  code: d.code,
                   width: d.width,
                   height: d.height,
                   color: d.color,
                   structureType: d.structureType,
-                  levels: d.levels,
-                  partitions: d.partitions,
-                });
-                onCloseEdit();
-              }}
-              onClose={onCloseEdit}
-              isEdit
-            />
-          </div>
-        )}
-
-        {isStorageEdit && selectedNode && (
-          <div className="p-4">
-            <StorageForm
-              initialData={selectedNodeData as unknown as StorageData}
-              onSubmit={(d) => {
-                onUpdateNode(selectedNode.id, {
-                  label: d.name,
-                  width: d.width,
-                  height: d.height,
-                  depth: d.depth,
-                  color: d.color,
-                  storageType: d.storageType,
-                  shelfCount: d.shelfCount,
-                  shelfCapacity: d.shelfCapacity,
-                  binCapacity: d.binCapacity,
-                  binSize: d.binSize,
-                  usedCapacity: d.usedCapacity,
+                  levels: d.levelConfigs.map((config) => ({
+                    id: `level-${Math.random().toString(36).substr(2, 9)}`,
+                    name: config.name,
+                    code: config.code,
+                    height: config.height,
+                    partitions: Array.from({ length: config.partitionCount }).map((_, idx) => ({
+                      id: `partition-${Math.random().toString(36).substr(2, 9)}`,
+                      name: `P${idx + 1}`,
+                      code: `P${idx + 1}`,
+                      width: Math.floor(d.width / config.partitionCount),
+                      max_capacity: 100,
+                      used_capacity: 0,
+                    })),
+                  })),
                 });
                 onCloseEdit();
               }}
@@ -377,10 +340,10 @@ export function SidePanel({
                       onSubmit={(d) => {
                         onAddStructure(d.structureType, {
                           name: d.name,
+                          code: d.code,
                           width: d.width,
                           height: d.height,
-                          levels: d.levels,
-                          partitions: d.partitions,
+                          levelConfigs: d.levelConfigs,
                           color: d.color,
                         });
                         setShowStructureForm(false);
@@ -394,78 +357,6 @@ export function SidePanel({
                     >
                       + New Structure
                     </button>
-                  )}
-                </div>
-              )}
-
-              {/* Create Storage */}
-              <button
-                onClick={() => toggleSection("storage")}
-                className="flex items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-accent/50"
-              >
-                <Archive size={16} className="text-amber-600" />
-                <span className="flex-1 text-sm font-medium text-foreground">
-                  Racks / Shelves / Bins
-                </span>
-                {openSection === "storage" ? (
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                ) : (
-                  <ChevronRight size={14} className="text-muted-foreground" />
-                )}
-              </button>
-              {openSection === "storage" && (
-                <div className="border-b border-border bg-accent/20 p-4">
-                  {zones.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">
-                      Create a zone first to add storage items.
-                    </p>
-                  ) : showStorageForm && storageTargetZone ? (
-                    <StorageForm
-                      onSubmit={(d) => {
-                        onAddStorage(d.storageType, storageTargetZone, {
-                          name: d.name,
-                          width: d.width,
-                          height: d.height,
-                          depth: d.depth,
-                          color: d.color,
-                          shelfCount: d.shelfCount,
-                          shelfCapacity: d.shelfCapacity,
-                          binCapacity: d.binCapacity,
-                          binSize: d.binSize,
-                        });
-                        setShowStorageForm(false);
-                        setStorageTargetZone("");
-                      }}
-                      onClose={() => {
-                        setShowStorageForm(false);
-                        setStorageTargetZone("");
-                      }}
-                    />
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs font-medium text-muted-foreground">
-                        Target Zone
-                      </label>
-                      <select
-                        value={storageTargetZone}
-                        onChange={(e) => setStorageTargetZone(e.target.value)}
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-                      >
-                        <option value="">Select a zone...</option>
-                        {zones.map((z) => (
-                          <option key={z.id} value={z.id}>
-                            {(z.data as Record<string, unknown>).label as string}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => setShowStorageForm(true)}
-                        disabled={!storageTargetZone}
-                        className="rounded-md border border-dashed border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        + New Storage Item
-                      </button>
-                    </div>
                   )}
                 </div>
               )}

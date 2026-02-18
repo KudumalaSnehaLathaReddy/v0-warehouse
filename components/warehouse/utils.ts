@@ -1,22 +1,20 @@
 import { nanoid } from "nanoid";
 import type { Node } from "@xyflow/react";
 import {
-  BIN_CAPACITIES,
   ELEMENT_COLORS,
   GRID_SIZE,
-  STORAGE_COLORS,
   STRUCTURE_COLORS,
   ZONE_COLORS,
   ZONE_LABELS,
-  type BinSize,
   type ElementData,
-  type StorageData,
   type StructureData,
   type StructureType,
   type WarehouseData,
   type WarehouseStatus,
   type ZoneData,
   type ZoneType,
+  type Level,
+  type Partition,
 } from "./types";
 
 export function createWarehouseNode(data: {
@@ -146,18 +144,37 @@ export function createStructureNode(
   parentSize: { width: number; height: number },
   formData?: {
     name?: string;
+    code?: string;
     width?: number;
     height?: number;
-    levels?: number;
-    partitions?: number;
-    levelCapacity?: number;
-    partitionCapacity?: number;
+    levelConfigs?: Array<{ name: string; code: string; height: number; partitionCount: number }>;
     color?: string;
   }
 ): Node<StructureData> {
   const id = `structure-${nanoid(6)}`;
   const w = formData?.width || 200;
   const h = formData?.height || 150;
+  const code = formData?.code || `STR-${nanoid(4).toUpperCase()}`;
+
+  // Build default levels if not provided
+  const levelConfigs = formData?.levelConfigs || [
+    { name: "Level 1", code: "L1", height: 50, partitionCount: 3 },
+  ];
+
+  const levels: Level[] = levelConfigs.map((config) => ({
+    id: `level-${nanoid(6)}`,
+    name: config.name,
+    code: config.code,
+    height: config.height,
+    partitions: Array.from({ length: config.partitionCount }).map((_, idx) => ({
+      id: `partition-${nanoid(6)}`,
+      name: `P${idx + 1}`,
+      code: `P${idx + 1}`,
+      width: Math.floor(w / config.partitionCount),
+      max_capacity: 100,
+      used_capacity: 0,
+    })),
+  }));
 
   return {
     id,
@@ -173,90 +190,15 @@ export function createStructureNode(
       ),
     },
     data: {
-      label:
-        formData?.name ||
-        structureType.charAt(0).toUpperCase() + structureType.slice(1),
+      label: formData?.name || structureType.charAt(0).toUpperCase() + structureType.slice(1),
+      code,
       width: w,
       height: h,
       color: formData?.color || STRUCTURE_COLORS[structureType],
       structureType,
-      levels: formData?.levels || 1,
-      partitions: formData?.partitions || 1,
-      levelCapacity: formData?.levelCapacity || 100,
-      partitionCapacity: formData?.partitionCapacity || 50,
+      levels,
     },
     parentId: "warehouse",
-    extent: "parent" as const,
-    style: { width: w, height: h },
-  };
-}
-
-export function createStorageNode(
-  storageType: StorageData["storageType"],
-  parentZoneId: string,
-  parentSize: { width: number; height: number },
-  formData?: {
-    name?: string;
-    width?: number;
-    height?: number;
-    depth?: number;
-    color?: string;
-    rackShelves?: number;
-    rackCapacityPerShelf?: number;
-    shelfCount?: number;
-    shelfCapacity?: number;
-    binCapacity?: number;
-    binSize?: BinSize;
-    floorCapacity?: number;
-  }
-): Node<StorageData> {
-  const id = `${storageType}-${nanoid(6)}`;
-  const defaults: Record<string, { w: number; h: number }> = {
-    rack: { w: 100, h: 60 },
-    shelf: { w: 80, h: 40 },
-    bin: { w: 50, h: 40 },
-    floor: { w: 120, h: 80 },
-  };
-  const d = defaults[storageType] || { w: 80, h: 50 };
-  const w = formData?.width || d.w;
-  const h = formData?.height || d.h;
-
-  const binSize = formData?.binSize || "medium";
-
-  return {
-    id,
-    type: "storage",
-    position: {
-      x: Math.min(
-        Math.round((parentSize.width / 2 - w / 2) / GRID_SIZE) * GRID_SIZE,
-        parentSize.width - w
-      ),
-      y: Math.min(
-        Math.round((parentSize.height / 2 - h / 2) / GRID_SIZE) * GRID_SIZE,
-        parentSize.height - h
-      ),
-    },
-    data: {
-      label:
-        formData?.name ||
-        storageType.charAt(0).toUpperCase() + storageType.slice(1),
-      width: w,
-      height: h,
-      depth: formData?.depth || 50,
-      color: formData?.color || STORAGE_COLORS[storageType],
-      storageType,
-      parentZoneId,
-      shelfCount: storageType === "shelf" ? formData?.shelfCount || 4 : undefined,
-      shelfCapacity:
-        storageType === "shelf" ? formData?.shelfCapacity || 100 : undefined,
-      binCapacity:
-        storageType === "bin"
-          ? formData?.binCapacity || BIN_CAPACITIES[binSize]
-          : undefined,
-      binSize: storageType === "bin" ? binSize : undefined,
-      usedCapacity: 0,
-    },
-    parentId: parentZoneId,
     extent: "parent" as const,
     style: { width: w, height: h },
   };
