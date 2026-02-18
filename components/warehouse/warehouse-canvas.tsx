@@ -48,6 +48,7 @@ export function WarehouseCanvas() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isEditingWarehouse, setIsEditingWarehouse] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [selectedPartition, setSelectedPartition] = useState<{ partition: Record<string, unknown>; structureId: string; levelId: string } | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   const warehouseNode = useMemo(
@@ -378,8 +379,14 @@ export function WarehouseCanvas() {
     }
   }, [isEditingWarehouse, selectedNode]);
 
-  // Handle partition updates
+  // Handle partition selection and updates
   useEffect(() => {
+    const handlePartitionSelected = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { structureId, levelId, partition } = customEvent.detail;
+      setSelectedPartition({ partition, structureId, levelId });
+    };
+
     const handlePartitionUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
       const { structureId, levelId, partition } = customEvent.detail;
@@ -436,8 +443,12 @@ export function WarehouseCanvas() {
       );
     };
 
+    window.addEventListener("partition-selected", handlePartitionSelected);
     window.addEventListener("partition-updated", handlePartitionUpdate);
-    return () => window.removeEventListener("partition-updated", handlePartitionUpdate);
+    return () => {
+      window.removeEventListener("partition-selected", handlePartitionSelected);
+      window.removeEventListener("partition-updated", handlePartitionUpdate);
+    };
   }, [setNodes]);
 
   return (
@@ -448,6 +459,8 @@ export function WarehouseCanvas() {
         warehouseData={warehouseData}
         selectedNode={selectedNode}
         isEditingWarehouse={isEditingWarehouse}
+        selectedPartition={selectedPartition}
+        onSelectPartition={setSelectedPartition}
         onCreateWarehouse={handleCreateWarehouse}
         onUpdateNode={handleUpdateNode}
         onAddElement={handleAddElement}

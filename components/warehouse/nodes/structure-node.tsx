@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo } from "react";
 import {
   type NodeProps,
   NodeResizer,
@@ -8,15 +8,13 @@ import {
   Position,
 } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
-import { Copy, Trash2, Pencil, X } from "lucide-react";
+import { Copy, Trash2, Pencil } from "lucide-react";
 import type { StructureData, Partition } from "../types";
-import { PartitionForm } from "../forms/partition-form";
 
 type StructureNodeProps = NodeProps<Node<StructureData>>;
 
 function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
   const { levels } = data;
-  const [selectedPartition, setSelectedPartition] = useState<{ partition: Partition; levelId: string } | null>(null);
 
   const getCapacityColor = (fillPercentage: number): string => {
     if (fillPercentage < 40) return "#10b981"; // green
@@ -25,23 +23,15 @@ function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
   };
 
   const handlePartitionClick = (partition: Partition, levelId: string) => {
-    setSelectedPartition({ partition, levelId });
-  };
-
-  const handlePartitionSave = (updatedPartition: Partition) => {
-    if (!selectedPartition) return;
-    
-    // Dispatch custom event to notify warehouse-canvas of partition update
-    const event = new CustomEvent("partition-updated", {
+    // Dispatch custom event to notify warehouse-canvas of partition selection
+    const event = new CustomEvent("partition-selected", {
       detail: {
         structureId: id,
-        levelId: selectedPartition.levelId,
-        partition: updatedPartition,
+        levelId,
+        partition,
       },
     });
     window.dispatchEvent(event);
-    
-    setSelectedPartition(null);
   };
 
   return (
@@ -154,36 +144,6 @@ function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
           </span>
         </div>
       </div>
-
-      {/* Partition Detail Modal */}
-      {selectedPartition && (
-        <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
-          onClick={() => setSelectedPartition(null)}
-        >
-          <div 
-            className="relative bg-card rounded-lg shadow-xl border border-border w-full max-w-md max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 flex items-center justify-between border-b border-border bg-card px-4 py-3 rounded-t-lg">
-              <h2 className="text-sm font-semibold text-foreground">Partition Details</h2>
-              <button
-                onClick={() => setSelectedPartition(null)}
-                className="p-1 rounded hover:bg-accent transition-colors"
-              >
-                <X size={16} className="text-muted-foreground" />
-              </button>
-            </div>
-            <div className="p-4">
-              <PartitionForm
-                partition={selectedPartition.partition}
-                onSubmit={handlePartitionSave}
-                onClose={() => setSelectedPartition(null)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

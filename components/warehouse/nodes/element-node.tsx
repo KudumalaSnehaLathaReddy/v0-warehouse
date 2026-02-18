@@ -28,18 +28,28 @@ const ELEMENT_ICONS: Record<string, string> = {
 function ElementNodeComponent({ id, data, selected }: ElementNodeProps) {
   return (
     <>
-      <NodeResizer
-        isVisible={!!selected}
-        minWidth={20}
-        minHeight={10}
-        lineStyle={{ borderColor: "#2563EB" }}
-        handleStyle={{
-          width: 6,
-          height: 6,
-          backgroundColor: "#2563EB",
-          borderRadius: 2,
+      <div
+        style={{
+          transformOrigin: "center",
+          transform: `rotate(${data.rotation || 0}deg)`,
+          transition: "transform 0.2s ease-out",
+          width: "100%",
+          height: "100%",
         }}
-      />
+      >
+        <NodeResizer
+          isVisible={!!selected}
+          minWidth={20}
+          minHeight={10}
+          lineStyle={{ borderColor: "#2563EB" }}
+          handleStyle={{
+            width: 6,
+            height: 6,
+            backgroundColor: "#2563EB",
+            borderRadius: 2,
+          }}
+        />
+      </div>
       <NodeToolbar
         isVisible={!!selected}
         position={Position.Top}

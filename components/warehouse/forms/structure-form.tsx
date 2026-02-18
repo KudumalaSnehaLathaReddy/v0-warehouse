@@ -5,6 +5,7 @@ import { STRUCTURE_COLORS, type StructureData, type StructureType } from "../typ
 
 interface StructureFormProps {
   initialData?: StructureData | null;
+  initialZoneId?: string;
   onSubmit: (data: {
     structureType: StructureType;
     name: string;
@@ -22,6 +23,7 @@ const STRUCTURE_TYPES: StructureType[] = ["warehouse", "section", "block"];
 
 export function StructureForm({
   initialData,
+  initialZoneId,
   onSubmit,
   onClose,
   isEdit,

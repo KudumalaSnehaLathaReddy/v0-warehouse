@@ -16,6 +16,7 @@ import { useState } from "react";
 import { WarehouseForm } from "./forms/warehouse-form";
 import { ZoneForm } from "./forms/zone-form";
 import { StructureForm } from "./forms/structure-form";
+import { PartitionForm } from "./forms/partition-form";
 import { NodeEditForm } from "./forms/node-edit-form";
 import type {
   WarehouseData,
@@ -24,6 +25,7 @@ import type {
   StructureType,
   ZoneData,
   StructureData,
+  Partition,
 } from "./types";
 
 type SidebarSection = "elements" | "zones" | "structures" | "settings" | null;
@@ -34,6 +36,8 @@ interface SidePanelProps {
   warehouseData: WarehouseData | null;
   selectedNode: Node | null;
   isEditingWarehouse: boolean;
+  selectedPartition: { partition: Partition; structureId: string; levelId: string } | null;
+  onSelectPartition: (partition: { partition: Partition; structureId: string; levelId: string } | null) => void;
   onCreateWarehouse: (data: {
     name: string;
     width: number;
@@ -58,11 +62,12 @@ interface SidePanelProps {
     type: StructureType,
     formData?: {
       name?: string;
+      code?: string;
       width?: number;
       height?: number;
-      levels?: number;
-      partitions?: number;
+      levelConfigs?: Array<{ name: string; code: string; height: number; partitionCount: number }>;
       color?: string;
+      zoneId?: string;
     }
   ) => void;
   onCloseEdit: () => void;
@@ -77,6 +82,8 @@ export function SidePanel({
   warehouseData,
   selectedNode,
   isEditingWarehouse,
+  selectedPartition,
+  onSelectPartition,
   onCreateWarehouse,
   onUpdateNode,
   onAddElement,
@@ -90,6 +97,7 @@ export function SidePanel({
   const [openSection, setOpenSection] = useState<SidebarSection>(null);
   const [showZoneForm, setShowZoneForm] = useState(false);
   const [showStructureForm, setShowStructureForm] = useState(false);
+  const [selectedZoneForStructure, setSelectedZoneForStructure] = useState<string>("");
 
   const toggleSection = (section: SidebarSection) => {
     setOpenSection((prev) => (prev === section ? null : section));
@@ -205,6 +213,37 @@ export function SidePanel({
               }}
               onClose={onCloseEdit}
               isEdit
+            />
+          </div>
+        )}
+
+        {/* Partition editing */}
+        {selectedPartition && (
+          <div className="p-4 border-t border-border">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Partition Editor</h3>
+              <button
+                onClick={() => onSelectPartition(null)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+            <PartitionForm
+              partition={selectedPartition.partition as unknown as Partition}
+              onSubmit={(updatedPartition) => {
+                // Dispatch custom event to notify warehouse-canvas of partition update
+                const event = new CustomEvent("partition-updated", {
+                  detail: {
+                    structureId: selectedPartition.structureId,
+                    levelId: selectedPartition.levelId,
+                    partition: updatedPartition,
+                  },
+                });
+                window.dispatchEvent(event);
+                onSelectPartition(null);
+              }}
+              onClose={() => onSelectPartition(null)}
             />
           </div>
         )}
@@ -350,20 +389,63 @@ export function SidePanel({
               {openSection === "structures" && (
                 <div className="border-b border-border bg-accent/20 p-4">
                   {showStructureForm ? (
-                    <StructureForm
-                      onSubmit={(d) => {
-                        onAddStructure(d.structureType, {
-                          name: d.name,
-                          code: d.code,
-                          width: d.width,
-                          height: d.height,
-                          levelConfigs: d.levelConfigs,
-                          color: d.color,
-                        });
-                        setShowStructureForm(false);
-                      }}
-                      onClose={() => setShowStructureForm(false)}
-                    />
+                    <>
+                      {!selectedZoneForStructure ? (
+                        <div className="flex flex-col gap-2">
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Select Zone (Optional)
+                          </label>
+                          <select
+                            value={selectedZoneForStructure}
+                            onChange={(e) => setSelectedZoneForStructure(e.target.value)}
+                            className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="">Warehouse (No Zone)</option>
+                            {zones.map((z) => (
+                              <option key={z.id} value={z.id}>
+                                {(z.data as Record<string, unknown>).label as string}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => setShowStructureForm(true)}
+                            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                          >
+                            Continue
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowStructureForm(false);
+                              setSelectedZoneForStructure("");
+                            }}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <StructureForm
+                          initialZoneId={selectedZoneForStructure}
+                          onSubmit={(d) => {
+                            onAddStructure(d.structureType, {
+                              name: d.name,
+                              code: d.code,
+                              width: d.width,
+                              height: d.height,
+                              levelConfigs: d.levelConfigs,
+                              color: d.color,
+                              zoneId: selectedZoneForStructure,
+                            });
+                            setShowStructureForm(false);
+                            setSelectedZoneForStructure("");
+                          }}
+                          onClose={() => {
+                            setShowStructureForm(false);
+                            setSelectedZoneForStructure("");
+                          }}
+                        />
+                      )}
+                    </>
                   ) : (
                     <button
                       onClick={() => setShowStructureForm(true)}
