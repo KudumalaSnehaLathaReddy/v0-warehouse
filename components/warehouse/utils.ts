@@ -176,6 +176,17 @@ export function createStructureNode(
     })),
   }));
 
+  // Calculate total structure capacity
+  const totalCapacity = levels.reduce(
+    (sum, level) =>
+      sum +
+      level.partitions.reduce(
+        (partSum, part) => partSum + part.max_capacity,
+        0
+      ),
+    0
+  );
+
   return {
     id,
     type: "structure",
@@ -197,6 +208,8 @@ export function createStructureNode(
       color: formData?.color || STRUCTURE_COLORS[structureType],
       structureType,
       levels,
+      max_capacity: totalCapacity,
+      used_capacity: 0,
     },
     parentId: "warehouse",
     extent: "parent" as const,

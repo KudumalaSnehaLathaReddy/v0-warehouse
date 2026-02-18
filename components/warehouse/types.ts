@@ -82,6 +82,8 @@ export interface StructureData {
   color: string;
   structureType: StructureType;
   levels: Level[];
+  max_capacity: number;
+  used_capacity: number;
 }
 
 export const ZONE_COLORS: Record<ZoneType, string> = {

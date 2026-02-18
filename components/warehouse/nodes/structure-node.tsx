@@ -124,7 +124,7 @@ function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
         </div>
         <div className="flex items-center justify-between border-t px-1.5 py-0.5" style={{ borderColor: "rgba(0,0,0,0.08)" }}>
           <span className="text-[8px] text-muted-foreground">
-            {levels.length} levels
+            {levels.length}L / {data.used_capacity}/{data.max_capacity}
           </span>
           <span className="text-[8px] text-muted-foreground">
             {data.width}x{data.height}

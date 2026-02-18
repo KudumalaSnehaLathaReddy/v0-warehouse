@@ -84,10 +84,12 @@ function ElementNodeComponent({ id, data, selected }: ElementNodeProps) {
         style={{
           backgroundColor: data.color,
           borderColor: selected ? "#2563EB" : "rgba(0,0,0,0.15)",
+          transformOrigin: "center",
           transform: `rotate(${data.rotation || 0}deg)`,
+          transition: "transform 0.2s ease-out",
         }}
       >
-        <span className="select-none text-[10px] font-medium text-slate-600">
+        <span className="select-none text-[10px] font-medium text-slate-600 pointer-events-none">
           {ELEMENT_ICONS[data.elementType]} - {data.label}
         </span>
       </div>

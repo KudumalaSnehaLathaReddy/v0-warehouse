@@ -165,6 +165,31 @@ export function SidePanel({
             <StructureForm
               initialData={selectedNodeData as unknown as StructureData}
               onSubmit={(d) => {
+                const levels = d.levelConfigs.map((config) => ({
+                  id: `level-${Math.random().toString(36).substr(2, 9)}`,
+                  name: config.name,
+                  code: config.code,
+                  height: config.height,
+                  partitions: Array.from({ length: config.partitionCount }).map((_, idx) => ({
+                    id: `partition-${Math.random().toString(36).substr(2, 9)}`,
+                    name: `P${idx + 1}`,
+                    code: `P${idx + 1}`,
+                    width: Math.floor(d.width / config.partitionCount),
+                    max_capacity: 100,
+                    used_capacity: 0,
+                  })),
+                }));
+                
+                const totalCapacity = levels.reduce(
+                  (sum, level) =>
+                    sum +
+                    level.partitions.reduce(
+                      (partSum, part) => partSum + part.max_capacity,
+                      0
+                    ),
+                  0
+                );
+
                 onUpdateNode(selectedNode.id, {
                   label: d.name,
                   code: d.code,
@@ -172,20 +197,9 @@ export function SidePanel({
                   height: d.height,
                   color: d.color,
                   structureType: d.structureType,
-                  levels: d.levelConfigs.map((config) => ({
-                    id: `level-${Math.random().toString(36).substr(2, 9)}`,
-                    name: config.name,
-                    code: config.code,
-                    height: config.height,
-                    partitions: Array.from({ length: config.partitionCount }).map((_, idx) => ({
-                      id: `partition-${Math.random().toString(36).substr(2, 9)}`,
-                      name: `P${idx + 1}`,
-                      code: `P${idx + 1}`,
-                      width: Math.floor(d.width / config.partitionCount),
-                      max_capacity: 100,
-                      used_capacity: 0,
-                    })),
-                  })),
+                  levels,
+                  max_capacity: totalCapacity,
+                  used_capacity: 0,
                 });
                 onCloseEdit();
               }}

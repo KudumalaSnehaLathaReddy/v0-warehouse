@@ -8,7 +8,7 @@ import {
   Position,
 } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
-import { Copy, Trash2, Pencil, Plus, Thermometer } from "lucide-react";
+import { Copy, Trash2, Pencil, Thermometer } from "lucide-react";
 import { ZONE_LABELS, type ZoneData } from "../types";
 
 type ZoneNodeProps = NodeProps<Node<ZoneData>>;
@@ -59,39 +59,6 @@ function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
           data-node-id={id}
         >
           <Trash2 size={13} />
-        </button>
-        <div className="mx-1 h-4 w-px bg-border" />
-        <button
-          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          title="Add Rack"
-          data-action="add-rack"
-          data-node-id={id}
-        >
-          <Plus size={11} /> Rack
-        </button>
-        <button
-          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          title="Add Shelf"
-          data-action="add-shelf"
-          data-node-id={id}
-        >
-          <Plus size={11} /> Shelf
-        </button>
-        <button
-          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          title="Add Bin"
-          data-action="add-bin"
-          data-node-id={id}
-        >
-          <Plus size={11} /> Bin
-        </button>
-        <button
-          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          title="Add Floor"
-          data-action="add-floor"
-          data-node-id={id}
-        >
-          <Plus size={11} /> Floor
         </button>
       </NodeToolbar>
       <div
