@@ -1,0 +1,192 @@
+[
+  {
+    "id": "warehouse",
+    "type": "warehouse",
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "data": {
+      "label": "Main Warehouse",
+      "code": "WH-001",
+      "width": 800,
+      "height": 600,
+      "color": "#F5F5F5",
+      "address": "123 Industrial Ave",
+      "managerName": "John Doe",
+      "managerEmail": "john@warehouse.com",
+      "managerPhone": "+1-555-0123",
+      "status": "active",
+      "maxCapacity": 10000
+    },
+    "parentId": null,
+    "extent": "parent",
+    "style": {
+      "width": 800,
+      "height": 600
+    }
+  },
+  {
+    "id": "zone-abc123",
+    "type": "zone",
+    "position": {
+      "x": 50,
+      "y": 50
+    },
+    "data": {
+      "label": "Cold Storage Zone",
+      "code": "ZONE-CS-001",
+      "width": 300,
+      "height": 200,
+      "length": 200,
+      "color": "#DBEAFE",
+      "zoneType": "cold-storage",
+      "temperatureMin": -18,
+      "temperatureMax": -15
+    },
+    "parentId": "warehouse",
+    "extent": "parent",
+    "style": {
+      "width": 300,
+      "height": 200
+    }
+  },
+  {
+    "id": "structure-str001",
+    "type": "structure",
+    "position": {
+      "x": 100,
+      "y": 150
+    },
+    "data": {
+      "label": "Freezer Section A",
+      "code": "STR-FS-001",
+      "width": 250,
+      "height": 200,
+      "color": "#E8F0FE",
+      "structureType": "section",
+      "max_capacity": 3600,
+      "used_capacity": 1234,
+      "levels": [
+        {
+          "id": "level-l1",
+          "name": "Level 1",
+          "code": "L1",
+          "height": 50,
+          "partitions": [
+            {
+              "id": "partition-p1",
+              "name": "P1",
+              "code": "P1",
+              "width": 75,
+              "max_capacity": 100,
+              "used_capacity": 35,
+              "product_name": "Frozen Vegetables",
+              "product_type": "Organic",
+              "product_value": 1500,
+              "product_uom": "Boxes"
+            },
+            {
+              "id": "partition-p2",
+              "name": "P2",
+              "code": "P2",
+              "width": 75,
+              "max_capacity": 100,
+              "used_capacity": 55,
+              "product_name": "Frozen Fish",
+              "product_type": "Seafood",
+              "product_value": 3200,
+              "product_uom": "Boxes"
+            },
+            {
+              "id": "partition-p3",
+              "name": "P3",
+              "code": "P3",
+              "width": 75,
+              "max_capacity": 100,
+              "used_capacity": 92,
+              "product_name": "Ice Cream Mix",
+              "product_type": "Dairy",
+              "product_value": 2800,
+              "product_uom": "Boxes"
+            }
+          ]
+        },
+        {
+          "id": "level-l2",
+          "name": "Level 2",
+          "code": "L2",
+          "height": 50,
+          "partitions": [
+            {
+              "id": "partition-p4",
+              "name": "P1",
+              "code": "P1",
+              "width": 75,
+              "max_capacity": 100,
+              "used_capacity": 20,
+              "product_name": "Meat Products",
+              "product_type": "Protein",
+              "product_value": 4500,
+              "product_uom": "Boxes"
+            },
+            {
+              "id": "partition-p5",
+              "name": "P2",
+              "code": "P2",
+              "width": 75,
+              "max_capacity": 100,
+              "used_capacity": 0
+            },
+            {
+              "id": "partition-p6",
+              "name": "P3",
+              "code": "P3",
+              "width": 75,
+              "max_capacity": 100,
+              "used_capacity": 45
+            }
+          ]
+        },
+        {
+          "id": "level-l3",
+          "name": "Level 3",
+          "code": "L3",
+          "height": 50,
+          "partitions": [
+            {
+              "id": "partition-p7",
+              "name": "P1",
+              "code": "P1",
+              "width": 75,
+              "max_capacity": 150,
+              "used_capacity": 87
+            },
+            {
+              "id": "partition-p8",
+              "name": "P2",
+              "code": "P2",
+              "width": 75,
+              "max_capacity": 150,
+              "used_capacity": 95
+            },
+            {
+              "id": "partition-p9",
+              "name": "P3",
+              "code": "P3",
+              "width": 75,
+              "max_capacity": 150,
+              "used_capacity": 3
+            }
+          ]
+        }
+      ]
+    },
+    "parentId": "warehouse",
+    "extent": "parent",
+    "style": {
+      "width": 250,
+      "height": 200
+    }
+  }
+]

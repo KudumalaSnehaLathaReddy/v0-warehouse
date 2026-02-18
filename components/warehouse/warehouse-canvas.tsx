@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import {
   ReactFlow,
   Background,
@@ -377,6 +377,68 @@ export function WarehouseCanvas() {
       setIsEditingWarehouse(false);
     }
   }, [isEditingWarehouse, selectedNode]);
+
+  // Handle partition updates
+  useEffect(() => {
+    const handlePartitionUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { structureId, levelId, partition } = customEvent.detail;
+      
+      setNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          if (node.id === structureId && node.type === "structure") {
+            const data = { ...node.data };
+            const levelIndex = data.levels.findIndex((l) => l.id === levelId);
+            if (levelIndex !== -1) {
+              const updatedLevel = { ...data.levels[levelIndex] };
+              const partitionIndex = updatedLevel.partitions.findIndex(
+                (p) => p.id === partition.id
+              );
+              if (partitionIndex !== -1) {
+                updatedLevel.partitions[partitionIndex] = partition;
+                const updatedLevels = [...data.levels];
+                updatedLevels[levelIndex] = updatedLevel;
+
+                // Recalculate structure capacity
+                const totalCapacity = updatedLevels.reduce(
+                  (sum, level) =>
+                    sum +
+                    level.partitions.reduce(
+                      (partSum, part) => partSum + part.max_capacity,
+                      0
+                    ),
+                  0
+                );
+                const usedCapacity = updatedLevels.reduce(
+                  (sum, level) =>
+                    sum +
+                    level.partitions.reduce(
+                      (partSum, part) => partSum + part.used_capacity,
+                      0
+                    ),
+                  0
+                );
+
+                return {
+                  ...node,
+                  data: {
+                    ...data,
+                    levels: updatedLevels,
+                    max_capacity: totalCapacity,
+                    used_capacity: usedCapacity,
+                  },
+                };
+              }
+            }
+          }
+          return node;
+        })
+      );
+    };
+
+    window.addEventListener("partition-updated", handlePartitionUpdate);
+    return () => window.removeEventListener("partition-updated", handlePartitionUpdate);
+  }, [setNodes]);
 
   return (
     <div className="flex h-screen w-full bg-background">

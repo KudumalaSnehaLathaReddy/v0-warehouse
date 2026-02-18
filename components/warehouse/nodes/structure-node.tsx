@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import {
   type NodeProps,
   NodeResizer,
@@ -8,18 +8,40 @@ import {
   Position,
 } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
-import { Copy, Trash2, Pencil } from "lucide-react";
-import type { StructureData } from "../types";
+import { Copy, Trash2, Pencil, X } from "lucide-react";
+import type { StructureData, Partition } from "../types";
+import { PartitionForm } from "../forms/partition-form";
 
 type StructureNodeProps = NodeProps<Node<StructureData>>;
 
 function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
   const { levels } = data;
+  const [selectedPartition, setSelectedPartition] = useState<{ partition: Partition; levelId: string } | null>(null);
 
   const getCapacityColor = (fillPercentage: number): string => {
-    if (fillPercentage < 33) return "#10b981"; // green
-    if (fillPercentage < 66) return "#f59e0b"; // amber
+    if (fillPercentage < 40) return "#10b981"; // green
+    if (fillPercentage < 70) return "#f59e0b"; // amber
     return "#ef4444"; // red
+  };
+
+  const handlePartitionClick = (partition: Partition, levelId: string) => {
+    setSelectedPartition({ partition, levelId });
+  };
+
+  const handlePartitionSave = (updatedPartition: Partition) => {
+    if (!selectedPartition) return;
+    
+    // Dispatch custom event to notify warehouse-canvas of partition update
+    const event = new CustomEvent("partition-updated", {
+      detail: {
+        structureId: id,
+        levelId: selectedPartition.levelId,
+        partition: updatedPartition,
+      },
+    });
+    window.dispatchEvent(event);
+    
+    setSelectedPartition(null);
   };
 
   return (
@@ -91,14 +113,15 @@ function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
                 const fillHeight = Math.round((fillPercentage / 100) * 100);
 
                 return (
-                  <div
+                  <button
                     key={partition.id}
-                    className="relative flex flex-1 items-end rounded-sm border border-solid overflow-hidden"
+                    onClick={() => handlePartitionClick(partition, level.id)}
+                    className="relative flex flex-1 items-end rounded-sm border border-solid overflow-hidden cursor-pointer transition-all hover:border-blue-400 hover:shadow-md"
                     style={{
                       borderColor: "rgba(0,0,0,0.2)",
                       backgroundColor: "rgba(255,255,255,0.3)",
                     }}
-                    title={`${partition.name}: ${partition.used_capacity}/${partition.max_capacity}`}
+                    title={`Click to edit: ${partition.name}: ${partition.used_capacity}/${partition.max_capacity}`}
                   >
                     {/* Capacity fill indicator - fills from bottom */}
                     <div
@@ -112,11 +135,11 @@ function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
                     />
                     {/* Partition label */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[6px] font-medium text-foreground drop-shadow-sm">
+                      <span className="text-[6px] font-medium text-foreground drop-shadow-sm pointer-events-none">
                         {partition.code}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -131,6 +154,36 @@ function StructureNodeComponent({ id, data, selected }: StructureNodeProps) {
           </span>
         </div>
       </div>
+
+      {/* Partition Detail Modal */}
+      {selectedPartition && (
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+          onClick={() => setSelectedPartition(null)}
+        >
+          <div 
+            className="relative bg-card rounded-lg shadow-xl border border-border w-full max-w-md max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 flex items-center justify-between border-b border-border bg-card px-4 py-3 rounded-t-lg">
+              <h2 className="text-sm font-semibold text-foreground">Partition Details</h2>
+              <button
+                onClick={() => setSelectedPartition(null)}
+                className="p-1 rounded hover:bg-accent transition-colors"
+              >
+                <X size={16} className="text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-4">
+              <PartitionForm
+                partition={selectedPartition.partition}
+                onSubmit={handlePartitionSave}
+                onClose={() => setSelectedPartition(null)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
