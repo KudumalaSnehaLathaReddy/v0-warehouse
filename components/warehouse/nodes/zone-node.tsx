@@ -3,7 +3,6 @@
 import { memo } from "react";
 import {
   type NodeProps,
-  NodeResizer,
   NodeToolbar,
   Position,
 } from "@xyflow/react";
@@ -18,18 +17,6 @@ function ZoneNodeComponent({ id, data, selected }: ZoneNodeProps) {
 
   return (
     <>
-      <NodeResizer
-        isVisible={!!selected}
-        minWidth={150}
-        minHeight={100}
-        lineStyle={{ borderColor: "#2563EB" }}
-        handleStyle={{
-          width: 7,
-          height: 7,
-          backgroundColor: "#2563EB",
-          borderRadius: 2,
-        }}
-      />
       <NodeToolbar
         isVisible={!!selected}
         position={Position.Top}

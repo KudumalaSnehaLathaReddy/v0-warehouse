@@ -151,20 +151,29 @@ export function WarehouseCanvas() {
         height?: number;
         levelConfigs?: Array<{ name: string; code: string; height: number; partitionCount: number }>;
         color?: string;
+        zoneId?: string;
       }
     ) => {
       if (!warehouseNode) return;
-      const wStyle = warehouseNode.style || {};
-      const pw = (wStyle.width as number) || 800;
-      const ph = (wStyle.height as number) || 600;
+      const parentId = formData?.zoneId || "warehouse";
+      const parentNode = formData?.zoneId
+        ? nodes.find((n) => n.id === formData.zoneId)
+        : warehouseNode;
+      
+      if (!parentNode) return;
+      
+      const pStyle = parentNode.style || {};
+      const pw = (pStyle.width as number) || 800;
+      const ph = (pStyle.height as number) || 600;
       const newNode = createStructureNode(
         type,
         { width: pw, height: ph },
-        formData
+        formData,
+        parentId
       );
       setNodes((nds) => [...nds, newNode]);
     },
-    [warehouseNode, setNodes]
+    [warehouseNode, nodes, setNodes]
   );
 
 

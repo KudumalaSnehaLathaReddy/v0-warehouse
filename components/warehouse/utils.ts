@@ -149,7 +149,8 @@ export function createStructureNode(
     height?: number;
     levelConfigs?: Array<{ name: string; code: string; height: number; partitionCount: number }>;
     color?: string;
-  }
+  },
+  parentId: string = "warehouse"
 ): Node<StructureData> {
   const id = `structure-${nanoid(6)}`;
   const w = formData?.width || 200;
@@ -211,7 +212,7 @@ export function createStructureNode(
       max_capacity: totalCapacity,
       used_capacity: 0,
     },
-    parentId: "warehouse",
+    parentId,
     extent: "parent" as const,
     style: { width: w, height: h },
   };
