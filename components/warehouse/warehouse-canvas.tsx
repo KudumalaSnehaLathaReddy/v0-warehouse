@@ -240,25 +240,6 @@ export function WarehouseCanvas() {
   );
 
   // Rotate element -- only on user rotate action
-  const handleRotate = useCallback(
-    (id: string) => {
-      setNodes((nds) =>
-        nds.map((n) => {
-          if (n.id !== id) return n;
-          const d = n.data as Record<string, unknown>;
-          return {
-            ...n,
-            data: {
-              ...d,
-              rotation: (((d.rotation as number) || 0) + 90) % 360,
-            },
-          };
-        })
-      );
-    },
-    [setNodes]
-  );
-
   // Export as JSON
   const handleExportJSON = useCallback(() => {
     const data = JSON.stringify(nodes, null, 2);
@@ -310,9 +291,6 @@ export function WarehouseCanvas() {
           case "delete":
             handleDelete(nodeId);
             return;
-          case "rotate":
-            handleRotate(nodeId);
-            return;
         }
       }
       if (node.type === "warehouse") {
@@ -328,7 +306,6 @@ export function WarehouseCanvas() {
     [
       handleDuplicate,
       handleDelete,
-      handleRotate,
       sidebarOpen,
     ]
   );
