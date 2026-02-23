@@ -1,3 +1,5 @@
+'use client';
+
 import { InboundWorkflow } from '@/components/inbound/InboundWorkflow';
 
 export default function InboundPage() {
