@@ -4,15 +4,15 @@ import React from 'react';
 import { Check } from 'lucide-react';
 import { WorkflowStage } from '@/types/inbound';
 
-interface Step {
-  id: WorkflowStage;
+interface Step<T = string> {
+  id: T;
   title: string;
   description?: string;
 }
 
-interface ProgressStepperProps {
-  steps: Step[];
-  currentStep: WorkflowStage;
+interface ProgressStepperProps<T = string> {
+  steps: Step<T>[];
+  currentStep: T;
 }
 
 const stageLabels: Record<WorkflowStage, { title: string; description: string }> = {
@@ -26,20 +26,24 @@ const stageLabels: Record<WorkflowStage, { title: string; description: string }>
 };
 
 export const ProgressStepper: React.FC<ProgressStepperProps> = ({ steps, currentStep }) => {
+  // Safety check for undefined or empty steps array
+  if (!steps || steps.length === 0) {
+    return <div className="w-full p-4 text-muted-foreground">Loading workflow...</div>;
+  }
+
   const currentIndex = steps.findIndex((s) => s.id === currentStep);
+  const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
 
   return (
     <div className="w-full">
       <div className="flex items-center justify-between gap-2">
         {steps.map((step, index) => {
-          const isCompleted = index < currentIndex;
-          const isCurrent = index === currentIndex;
-          const isUpcoming = index > currentIndex;
-
-          const config = stageLabels[step.id];
+          const isCompleted = index < safeCurrentIndex;
+          const isCurrent = index === safeCurrentIndex;
+          const isUpcoming = index > safeCurrentIndex;
 
           return (
-            <React.Fragment key={step.id}>
+            <React.Fragment key={String(step.id)}>
               {/* Step Node */}
               <div className="flex flex-col items-center gap-2">
                 <div
@@ -55,9 +59,9 @@ export const ProgressStepper: React.FC<ProgressStepperProps> = ({ steps, current
                 </div>
                 <div className="text-center">
                   <p className={`text-xs font-semibold ${isCurrent ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {config.title}
+                    {step.title}
                   </p>
-                  <p className="text-xs text-muted-foreground hidden sm:block">{config.description}</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">{step.description}</p>
                 </div>
               </div>
 

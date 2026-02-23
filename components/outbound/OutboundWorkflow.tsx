@@ -13,15 +13,17 @@ import { VehicleLog as VehicleLogStage } from './stages/VehicleLog';
 import { ShippingManifest as ManifestStage } from './stages/ShippingManifest';
 import { StatusBadge } from '@/components/inbound/shared/StatusBadge';
 
-const WORKFLOW_STAGES = [
-  'Request Creation',
-  'Manager Approval',
-  'Strategy Logic',
-  'Picking & Packing',
-  'Dock Assignment',
-  'Vehicle Log',
-  'Shipping Manifest',
-  'Completed',
+type OutboundStage = 'request' | 'approval' | 'strategy' | 'picking' | 'dock' | 'vehicle' | 'manifest' | 'completed';
+
+const stepsConfig = [
+  { id: 'request' as OutboundStage, title: 'Request', description: 'Create outbound request' },
+  { id: 'approval' as OutboundStage, title: 'Approval', description: 'Manager approves and generates list' },
+  { id: 'strategy' as OutboundStage, title: 'Strategy', description: 'Select rotation strategy' },
+  { id: 'picking' as OutboundStage, title: 'Picking', description: 'Pick and pack items' },
+  { id: 'dock' as OutboundStage, title: 'Dock', description: 'Assign dock location' },
+  { id: 'vehicle' as OutboundStage, title: 'Vehicle', description: 'Log vehicle entry/exit' },
+  { id: 'manifest' as OutboundStage, title: 'Manifest', description: 'Generate shipping manifest' },
+  { id: 'completed' as OutboundStage, title: 'Completed', description: 'Dispatch completed' },
 ];
 
 export function OutboundWorkflow() {
@@ -145,8 +147,8 @@ export function OutboundWorkflow() {
       <div className="bg-card border-b border-border sticky top-20 z-40">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <ProgressStepper
-            stages={WORKFLOW_STAGES}
-            currentStage={state.currentStage}
+            steps={stepsConfig}
+            currentStep={stepsConfig[state.currentStage]?.id || 'request'}
           />
         </div>
       </div>
