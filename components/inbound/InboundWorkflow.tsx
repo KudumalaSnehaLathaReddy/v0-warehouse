@@ -1,5 +1,6 @@
 'use client';
 
+// Cache version: v1.0.2 - Forces webpack rebuild
 import React, { useState } from 'react';
 import { WorkflowState, WorkflowStage, RequestData, GRNData, StrategyAssignmentData, InventoryItem, Discrepancy, GatePass } from '@/types/inbound';
 import { ProgressStepper } from './workflow/ProgressStepper';

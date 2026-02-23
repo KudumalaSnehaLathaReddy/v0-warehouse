@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+// Build version: v1.0.2 - Cache invalidation
+import React, { useState } from 'react';
 import { Package } from 'lucide-react';
-import { OutboundWorkflowState, OutboundRequest, PickingList, DockAssignment, VehicleLog, ShippingManifest, RotationStrategy } from '@/types/outbound';
+import { OutboundRequest } from '@/types/outbound';
 import { ProgressStepper } from '@/components/inbound/workflow/ProgressStepper';
 import { RequestCreation } from './stages/RequestCreation';
 import { ManagerApproval } from './stages/ManagerApproval';

@@ -6,6 +6,7 @@ import { ActionButton } from '../shared/ActionButton';
 import { ArrowRight, Printer, TrendingUp, TrendingDown } from 'lucide-react';
 import { StatusBadge } from '../shared/StatusBadge';
 import { generateQRCodeDataUrl } from '@/lib/qr-utils';
+// Force rebuild to clear webpack cache
 
 interface GateLogisticsProps {
   grnNumber: string;
