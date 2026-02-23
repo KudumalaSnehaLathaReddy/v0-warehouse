@@ -61,6 +61,13 @@ const config: Config = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        'accent-secondary': 'hsl(var(--accent-secondary))',
+        'status': {
+          success: 'hsl(var(--status-success))',
+          warning: 'hsl(var(--status-warning))',
+          error: 'hsl(var(--status-error))',
+          info: 'hsl(var(--status-info))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
