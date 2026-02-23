@@ -27,11 +27,18 @@ const stageLabels: Record<WorkflowStage, { title: string; description: string }>
 
 export const ProgressStepper: React.FC<ProgressStepperProps> = ({ steps, currentStep }) => {
   // Safety check for undefined or empty steps array
-  if (!steps || steps.length === 0) {
+  if (!steps || !Array.isArray(steps) || steps.length === 0) {
     return <div className="w-full p-4 text-muted-foreground">Loading workflow...</div>;
   }
 
-  const currentIndex = steps.findIndex((s) => s.id === currentStep);
+  // Safely find the current index
+  let currentIndex = -1;
+  try {
+    currentIndex = steps.findIndex((s) => s?.id === currentStep);
+  } catch (error) {
+    console.error('[v0] Error finding step index:', error);
+    currentIndex = 0;
+  }
   const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
 
   return (

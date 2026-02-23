@@ -15,15 +15,15 @@ import { StatusBadge } from '@/components/inbound/shared/StatusBadge';
 
 type OutboundStage = 'request' | 'approval' | 'strategy' | 'picking' | 'dock' | 'vehicle' | 'manifest' | 'completed';
 
-const stepsConfig = [
-  { id: 'request' as OutboundStage, title: 'Request', description: 'Create outbound request' },
-  { id: 'approval' as OutboundStage, title: 'Approval', description: 'Manager approves and generates list' },
-  { id: 'strategy' as OutboundStage, title: 'Strategy', description: 'Select rotation strategy' },
-  { id: 'picking' as OutboundStage, title: 'Picking', description: 'Pick and pack items' },
-  { id: 'dock' as OutboundStage, title: 'Dock', description: 'Assign dock location' },
-  { id: 'vehicle' as OutboundStage, title: 'Vehicle', description: 'Log vehicle entry/exit' },
-  { id: 'manifest' as OutboundStage, title: 'Manifest', description: 'Generate shipping manifest' },
-  { id: 'completed' as OutboundStage, title: 'Completed', description: 'Dispatch completed' },
+const stepsConfig: Array<{ id: OutboundStage; title: string; description: string }> = [
+  { id: 'request', title: 'Request', description: 'Create outbound request' },
+  { id: 'approval', title: 'Approval', description: 'Manager approves and generates list' },
+  { id: 'strategy', title: 'Strategy', description: 'Select rotation strategy' },
+  { id: 'picking', title: 'Picking', description: 'Pick and pack items' },
+  { id: 'dock', title: 'Dock', description: 'Assign dock location' },
+  { id: 'vehicle', title: 'Vehicle', description: 'Log vehicle entry/exit' },
+  { id: 'manifest', title: 'Manifest', description: 'Generate shipping manifest' },
+  { id: 'completed', title: 'Completed', description: 'Dispatch completed' },
 ];
 
 export function OutboundWorkflow() {
@@ -146,10 +146,16 @@ export function OutboundWorkflow() {
       {/* Progress Stepper */}
       <div className="bg-card border-b border-border sticky top-20 z-40">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <ProgressStepper
-            steps={stepsConfig}
-            currentStep={stepsConfig[state.currentStage]?.id || 'request'}
-          />
+          {stepsConfig && stepsConfig.length > 0 && (
+            <ProgressStepper
+              steps={stepsConfig}
+              currentStep={
+                typeof state.currentStage === 'number' && state.currentStage >= 0 && state.currentStage < stepsConfig.length
+                  ? stepsConfig[state.currentStage]?.id || 'request'
+                  : 'request'
+              }
+            />
+          )}
         </div>
       </div>
 

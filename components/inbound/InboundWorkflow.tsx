@@ -13,14 +13,14 @@ import { StatusBadge } from './shared/StatusBadge';
 import { ActionButton } from './shared/ActionButton';
 import { CheckCircle, RotateCw } from 'lucide-react';
 
-const stepsConfig = [
-  { id: 'request-creation' as WorkflowStage, title: 'Request', description: 'Create request' },
-  { id: 'manager-approval' as WorkflowStage, title: 'Approval', description: 'Manager approves' },
-  { id: 'strategy-assignment' as WorkflowStage, title: 'Strategy', description: 'Assign location' },
-  { id: 'gate-logistics' as WorkflowStage, title: 'Gate Logistics', description: 'Vehicle passes' },
-  { id: 'unloading-inspection' as WorkflowStage, title: 'Inspection', description: 'Unload & inspect' },
-  { id: 'put-away' as WorkflowStage, title: 'Put-Away', description: 'Bin placement' },
-  { id: 'completed' as WorkflowStage, title: 'Completed', description: 'Finished' },
+const stepsConfig: Array<{ id: WorkflowStage; title: string; description: string }> = [
+  { id: 'request-creation', title: 'Request', description: 'Create request' },
+  { id: 'manager-approval', title: 'Approval', description: 'Manager approves' },
+  { id: 'strategy-assignment', title: 'Strategy', description: 'Assign location' },
+  { id: 'gate-logistics', title: 'Gate Logistics', description: 'Vehicle passes' },
+  { id: 'unloading-inspection', title: 'Inspection', description: 'Unload & inspect' },
+  { id: 'put-away', title: 'Put-Away', description: 'Bin placement' },
+  { id: 'completed', title: 'Completed', description: 'Finished' },
 ];
 
 export const InboundWorkflow: React.FC = () => {
