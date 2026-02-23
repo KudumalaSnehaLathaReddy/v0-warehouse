@@ -5,7 +5,7 @@ import { GatePass } from '@/types/inbound';
 import { ActionButton } from '../shared/ActionButton';
 import { ArrowRight, Printer, TrendingUp, TrendingDown } from 'lucide-react';
 import { StatusBadge } from '../shared/StatusBadge';
-import QRCode from 'qrcode.react';
+import { generateQRCodeDataUrl } from '@/lib/qr-utils';
 
 interface GateLogisticsProps {
   grnNumber: string;
@@ -37,15 +37,17 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
   });
   const [entryPass, setEntryPass] = useState<GatePass | null>(null);
   const [entryErrors, setEntryErrors] = useState<Record<string, string>>({});
+  const [entryQRDataUrl, setEntryQRDataUrl] = useState<string | null>(null);
 
   // Exit Pass Form
   const [exitFormData, setExitFormData] = useState({
     unloadConfirmed: false,
   });
   const [exitPass, setExitPass] = useState<GatePass | null>(null);
+  const [exitQRDataUrl, setExitQRDataUrl] = useState<string | null>(null);
 
   // Generate Entry Pass
-  const handleGenerateEntryPass = () => {
+  const handleGenerateEntryPass = async () => {
     const newErrors: Record<string, string> = {};
 
     if (!entryFormData.vehicleRegNumber.trim()) {
@@ -61,6 +63,8 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
     }
 
     const passId = generatePassId('entry');
+    const qrContent = `${passId}|${grnNumber}|ENTRY|${new Date().getTime()}`;
+    
     const newEntryPass: GatePass = {
       passId,
       passType: 'entry',
@@ -68,8 +72,15 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
       driverName: entryFormData.driverName,
       vehicleType: entryFormData.vehicleType,
       timestamp: new Date().toISOString(),
-      qrCode: `${passId}|${grnNumber}|ENTRY|${new Date().getTime()}`,
+      qrCode: qrContent,
     };
+
+    try {
+      const qrDataUrl = await generateQRCodeDataUrl(qrContent);
+      setEntryQRDataUrl(qrDataUrl);
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+    }
 
     setEntryPass(newEntryPass);
     setEntryPassGenerated(true);
@@ -77,12 +88,14 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
   };
 
   // Generate Exit Pass
-  const handleGenerateExitPass = () => {
+  const handleGenerateExitPass = async () => {
     if (!exitFormData.unloadConfirmed) {
       return;
     }
 
     const passId = generatePassId('exit');
+    const qrContent = `${passId}|${grnNumber}|EXIT|${new Date().getTime()}`;
+    
     const newExitPass: GatePass = {
       passId,
       passType: 'exit',
@@ -90,8 +103,15 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
       driverName: entryFormData.driverName,
       vehicleType: entryFormData.vehicleType,
       timestamp: new Date().toISOString(),
-      qrCode: `${passId}|${grnNumber}|EXIT|${new Date().getTime()}`,
+      qrCode: qrContent,
     };
+
+    try {
+      const qrDataUrl = await generateQRCodeDataUrl(qrContent);
+      setExitQRDataUrl(qrDataUrl);
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+    }
 
     setExitPass(newExitPass);
     setExitPassGenerated(true);
@@ -234,7 +254,9 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
               </div>
 
               <div className="flex justify-center p-4 bg-white rounded-lg border border-border">
-                <QRCode value={entryPass.qrCode} size={256} level="H" includeMargin={true} />
+                {entryQRDataUrl && (
+                  <img src={entryQRDataUrl} alt="Entry Pass QR Code" className="w-64 h-64" />
+                )}
               </div>
 
               <ActionButton
@@ -317,7 +339,9 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
                 </div>
 
                 <div className="flex justify-center p-4 bg-white rounded-lg border border-border">
-                  <QRCode value={exitPass.qrCode} size={256} level="H" includeMargin={true} />
+                  {exitQRDataUrl && (
+                    <img src={exitQRDataUrl} alt="Exit Pass QR Code" className="w-64 h-64" />
+                  )}
                 </div>
 
                 <ActionButton
