@@ -6,7 +6,6 @@ import { ActionButton } from '../shared/ActionButton';
 import { ArrowRight, Printer, TrendingUp, TrendingDown } from 'lucide-react';
 import { StatusBadge } from '../shared/StatusBadge';
 import { generateQRCodeDataUrl } from '@/lib/qr-utils';
-// Force rebuild to clear webpack cache
 
 interface GateLogisticsProps {
   grnNumber: string;
@@ -26,10 +25,6 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
   onSubmit,
   loading = false,
 }) => {
-  const [currentStep, setCurrentStep] = useState<'entry' | 'exit'>('entry');
-  const [entryPassGenerated, setEntryPassGenerated] = useState(false);
-  const [exitPassGenerated, setExitPassGenerated] = useState(false);
-
   // Entry Pass Form
   const [entryFormData, setEntryFormData] = useState({
     vehicleRegNumber: '',
@@ -39,6 +34,7 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
   const [entryPass, setEntryPass] = useState<GatePass | null>(null);
   const [entryErrors, setEntryErrors] = useState<Record<string, string>>({});
   const [entryQRDataUrl, setEntryQRDataUrl] = useState<string | null>(null);
+  const [entryPassGenerated, setEntryPassGenerated] = useState(false);
 
   // Exit Pass Form
   const [exitFormData, setExitFormData] = useState({
@@ -46,6 +42,7 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
   });
   const [exitPass, setExitPass] = useState<GatePass | null>(null);
   const [exitQRDataUrl, setExitQRDataUrl] = useState<string | null>(null);
+  const [exitPassGenerated, setExitPassGenerated] = useState(false);
 
   // Generate Entry Pass
   const handleGenerateEntryPass = async () => {
@@ -118,259 +115,252 @@ export const GateLogistics: React.FC<GateLogisticsProps> = ({
     setExitPassGenerated(true);
   };
 
-  // Submit both passes
   const handleSubmit = () => {
-    if (!entryPass) return;
-    onSubmit(entryPass, exitPass || undefined);
+    if (entryPass && exitPass) {
+      onSubmit(entryPass, exitPass);
+    } else if (entryPass) {
+      onSubmit(entryPass);
+    }
   };
 
-  const canProceed = entryPassGenerated && exitPassGenerated;
-
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-2">
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground">Gate Logistics & Vehicle Passes</h2>
-        <p className="text-muted-foreground">
-          Generate entry and exit passes for vehicle management at the warehouse gate
-        </p>
-      </div>
-
-      {/* GRN Display */}
-      <div className="bg-card rounded-lg border border-border p-4 flex items-center justify-between">
-        <div>
-          <p className="text-xs text-muted-foreground uppercase">Associated GRN</p>
-          <p className="text-lg font-mono font-bold text-foreground mt-1">{grnNumber}</p>
-        </div>
-        <StatusBadge status="in-progress" size="sm" />
+      <div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Gate Logistics</h2>
+        <p className="text-muted-foreground">Generate vehicle entry and exit passes for GRN {grnNumber}</p>
       </div>
 
       {/* Entry Pass Section */}
-      <div className="bg-card rounded-lg border border-border p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <TrendingDown className="w-5 h-5 text-accent" />
-            <span>Vehicle Entry Pass</span>
+      <div className="bg-card rounded-lg border border-border p-6 space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-accent" />
+            Vehicle Entry Pass
           </h3>
-          {entryPassGenerated && <StatusBadge status="completed" size="sm" />}
         </div>
 
         {!entryPassGenerated ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Vehicle Registration <span className="text-status-error">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., ABC-1234"
-                  value={entryFormData.vehicleRegNumber}
-                  onChange={(e) => {
-                    setEntryFormData((prev) => ({ ...prev, vehicleRegNumber: e.target.value }));
-                    if (entryErrors.vehicleRegNumber) setEntryErrors({});
-                  }}
-                  className={`w-full px-4 py-2.5 rounded-lg border text-foreground bg-background text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent ${
-                    entryErrors.vehicleRegNumber ? 'border-status-error' : 'border-border'
-                  }`}
-                />
-                {entryErrors.vehicleRegNumber && (
-                  <p className="text-xs text-status-error mt-1">{entryErrors.vehicleRegNumber}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Vehicle Type <span className="text-status-error">*</span>
-                </label>
-                <select
-                  value={entryFormData.vehicleType}
-                  onChange={(e) =>
-                    setEntryFormData((prev) => ({ ...prev, vehicleType: e.target.value }))
-                  }
-                  className="w-full px-4 py-2.5 rounded-lg border border-border text-foreground bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-                >
-                  {vehicleTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
+            {/* Vehicle Registration */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Driver Name <span className="text-status-error">*</span>
+                Vehicle Registration Number
               </label>
               <input
                 type="text"
-                placeholder="Enter driver's full name"
+                placeholder="e.g., KA01AB1234"
+                value={entryFormData.vehicleRegNumber}
+                onChange={(e) =>
+                  setEntryFormData({
+                    ...entryFormData,
+                    vehicleRegNumber: e.target.value.toUpperCase(),
+                  })
+                }
+                className={`w-full px-4 py-2.5 rounded-lg border bg-background text-foreground ${
+                  entryErrors.vehicleRegNumber ? 'border-status-error' : 'border-border'
+                }`}
+              />
+              {entryErrors.vehicleRegNumber && (
+                <p className="text-sm text-status-error mt-1">{entryErrors.vehicleRegNumber}</p>
+              )}
+            </div>
+
+            {/* Driver Name */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Driver Name
+              </label>
+              <input
+                type="text"
+                placeholder="Enter driver name"
                 value={entryFormData.driverName}
-                onChange={(e) => {
-                  setEntryFormData((prev) => ({ ...prev, driverName: e.target.value }));
-                  if (entryErrors.driverName) setEntryErrors({});
-                }}
-                className={`w-full px-4 py-2.5 rounded-lg border text-foreground bg-background text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent ${
+                onChange={(e) =>
+                  setEntryFormData({
+                    ...entryFormData,
+                    driverName: e.target.value,
+                  })
+                }
+                className={`w-full px-4 py-2.5 rounded-lg border bg-background text-foreground ${
                   entryErrors.driverName ? 'border-status-error' : 'border-border'
                 }`}
               />
               {entryErrors.driverName && (
-                <p className="text-xs text-status-error mt-1">{entryErrors.driverName}</p>
+                <p className="text-sm text-status-error mt-1">{entryErrors.driverName}</p>
               )}
+            </div>
+
+            {/* Vehicle Type */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Vehicle Type
+              </label>
+              <select
+                value={entryFormData.vehicleType}
+                onChange={(e) =>
+                  setEntryFormData({
+                    ...entryFormData,
+                    vehicleType: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground"
+              >
+                {vehicleTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <ActionButton
               onClick={handleGenerateEntryPass}
+              label="Generate Entry Pass"
               variant="primary"
-              fullWidth
-            >
-              Generate Entry Pass
-            </ActionButton>
+              icon={ArrowRight}
+              disabled={loading}
+            />
           </div>
         ) : (
-          entryPass && (
-            <div className="space-y-4">
-              <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Pass ID</p>
-                    <p className="font-mono text-foreground mt-1">{entryPass.passId}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Vehicle</p>
-                    <p className="text-foreground mt-1">{entryPass.vehicleRegNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Driver</p>
-                    <p className="text-foreground mt-1">{entryPass.driverName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">Time</p>
-                    <p className="text-sm text-foreground mt-1">
-                      {new Date(entryPass.timestamp).toLocaleTimeString()}
-                    </p>
-                  </div>
+          <div className="space-y-4">
+            {/* Entry Pass Details */}
+            <div className="bg-background rounded-lg p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Pass ID</p>
+                  <p className="font-mono font-semibold text-foreground">{entryPass?.passId}</p>
+                </div>
+                <StatusBadge status="success" label="Generated" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Vehicle Registration</p>
+                  <p className="text-foreground">{entryPass?.vehicleRegNumber}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Driver Name</p>
+                  <p className="text-foreground">{entryPass?.driverName}</p>
                 </div>
               </div>
-
-              <div className="flex justify-center p-4 bg-white rounded-lg border border-border">
-                {entryQRDataUrl && (
-                  <img src={entryQRDataUrl} alt="Entry Pass QR Code" className="w-64 h-64" />
-                )}
-              </div>
-
-              <ActionButton
-                variant="outline"
-                icon={Printer}
-                fullWidth
-                onClick={() => window.print()}
-              >
-                Print Entry Pass
-              </ActionButton>
             </div>
-          )
+
+            {/* QR Code */}
+            <div className="flex justify-center p-4 bg-white rounded-lg border border-border">
+              {entryQRDataUrl && (
+                <img src={entryQRDataUrl} alt="Entry Pass QR Code" className="w-64 h-64" />
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <ActionButton
+                onClick={() => window.print()}
+                label="Print Pass"
+                variant="secondary"
+                icon={Printer}
+              />
+              <ActionButton
+                onClick={() => {
+                  setEntryPassGenerated(false);
+                  setEntryFormData({ vehicleRegNumber: '', driverName: '', vehicleType: 'Truck' });
+                  setEntryErrors({});
+                  setEntryQRDataUrl(null);
+                }}
+                label="Create Another"
+                variant="secondary"
+              />
+            </div>
+          </div>
         )}
       </div>
 
       {/* Exit Pass Section */}
       {entryPassGenerated && (
-        <div className="bg-card rounded-lg border border-border p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-accent-secondary" />
-              <span>Vehicle Exit Pass</span>
+        <div className="bg-card rounded-lg border border-border p-6 space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <TrendingDown className="w-5 h-5 text-accent-secondary" />
+              Vehicle Exit Pass
             </h3>
-            {exitPassGenerated && <StatusBadge status="completed" size="sm" />}
           </div>
 
           {!exitPassGenerated ? (
             <div className="space-y-4">
-              <div className="p-4 bg-status-info/10 border border-status-info/30 rounded-lg">
-                <p className="text-sm text-status-info font-medium">All items must be unloaded before exit pass generation</p>
-              </div>
-
-              <label className="flex items-center gap-3 p-4 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3 p-4 bg-status-info/10 border border-status-info/30 rounded-lg">
                 <input
                   type="checkbox"
                   checked={exitFormData.unloadConfirmed}
                   onChange={(e) =>
-                    setExitFormData((prev) => ({ ...prev, unloadConfirmed: e.target.checked }))
+                    setExitFormData({
+                      ...exitFormData,
+                      unloadConfirmed: e.target.checked,
+                    })
                   }
-                  className="w-4 h-4 rounded accent-accent"
+                  className="w-4 h-4 rounded"
                 />
-                <span className="text-sm font-medium text-foreground">
-                  I confirm all items have been unloaded and inspected
-                </span>
-              </label>
+                <label className="text-sm text-foreground cursor-pointer">
+                  Confirm that all items have been unloaded and inspected
+                </label>
+              </div>
 
               <ActionButton
                 onClick={handleGenerateExitPass}
+                label="Generate Exit Pass"
                 variant="primary"
-                disabled={!exitFormData.unloadConfirmed}
-                fullWidth
-              >
-                Generate Exit Pass
-              </ActionButton>
+                icon={ArrowRight}
+                disabled={!exitFormData.unloadConfirmed || loading}
+              />
             </div>
           ) : (
-            exitPass && (
-              <div className="space-y-4">
-                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium">Pass ID</p>
-                      <p className="font-mono text-foreground mt-1">{exitPass.passId}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium">Vehicle</p>
-                      <p className="text-foreground mt-1">{exitPass.vehicleRegNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium">Driver</p>
-                      <p className="text-foreground mt-1">{exitPass.driverName}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium">Time</p>
-                      <p className="text-sm text-foreground mt-1">
-                        {new Date(exitPass.timestamp).toLocaleTimeString()}
-                      </p>
-                    </div>
+            <div className="space-y-4">
+              {/* Exit Pass Details */}
+              <div className="bg-background rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Pass ID</p>
+                    <p className="font-mono font-semibold text-foreground">{exitPass?.passId}</p>
                   </div>
+                  <StatusBadge status="success" label="Generated" />
                 </div>
-
-                <div className="flex justify-center p-4 bg-white rounded-lg border border-border">
-                  {exitQRDataUrl && (
-                    <img src={exitQRDataUrl} alt="Exit Pass QR Code" className="w-64 h-64" />
-                  )}
-                </div>
-
-                <ActionButton
-                  variant="outline"
-                  icon={Printer}
-                  fullWidth
-                  onClick={() => window.print()}
-                >
-                  Print Exit Pass
-                </ActionButton>
               </div>
-            )
+
+              {/* QR Code */}
+              <div className="flex justify-center p-4 bg-white rounded-lg border border-border">
+                {exitQRDataUrl && (
+                  <img src={exitQRDataUrl} alt="Exit Pass QR Code" className="w-64 h-64" />
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <ActionButton
+                  onClick={() => window.print()}
+                  label="Print Pass"
+                  variant="secondary"
+                  icon={Printer}
+                />
+                <ActionButton
+                  onClick={() => {
+                    setExitPassGenerated(false);
+                    setExitFormData({ unloadConfirmed: false });
+                    setExitQRDataUrl(null);
+                  }}
+                  label="Create Another"
+                  variant="secondary"
+                />
+              </div>
+            </div>
           )}
         </div>
       )}
 
-      {/* Continue Button */}
-      {canProceed && (
+      {/* Submit Button */}
+      {entryPassGenerated && exitPassGenerated && (
         <ActionButton
           onClick={handleSubmit}
+          label="Complete Gate Logistics"
           variant="primary"
-          loading={loading}
           icon={ArrowRight}
-          iconPosition="right"
-          fullWidth
-        >
-          Both Passes Complete - Continue to Unloading
-        </ActionButton>
+          disabled={loading}
+        />
       )}
     </div>
   );
