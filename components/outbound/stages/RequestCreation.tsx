@@ -120,6 +120,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
               <button
                 key={type}
                 onClick={() => setOrderType(type)}
+                suppressHydrationWarning
                 className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
                   orderType === type
                     ? 'bg-accent text-accent-foreground'
@@ -199,6 +200,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
               onChange={(e) =>
                 setFormData({ ...formData, destinationLocation: e.target.value })
               }
+              suppressHydrationWarning
               className={`w-full px-3 py-2 rounded-lg border transition-colors ${
                 errors.destinationLocation
                   ? 'border-status-error bg-red-50'
@@ -221,6 +223,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
+              suppressHydrationWarning
               className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
@@ -236,6 +239,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
             icon={Plus}
             label="Add Item"
             variant="secondary"
+            suppressHydrationWarning
           />
         </div>
 
@@ -261,6 +265,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
                     handleItemChange(item.itemId, 'sku', e.target.value)
                   }
                   placeholder="SKU-001"
+                  suppressHydrationWarning
                   className="w-full px-2 py-1 rounded border border-border text-sm"
                 />
               </div>
@@ -275,6 +280,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
                     handleItemChange(item.itemId, 'productName', e.target.value)
                   }
                   placeholder="Product Name"
+                  suppressHydrationWarning
                   className="w-full px-2 py-1 rounded border border-border text-sm"
                 />
               </div>
@@ -288,11 +294,13 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
                   onChange={(e) =>
                     handleItemChange(item.itemId, 'quantity', parseInt(e.target.value) || 0)
                   }
+                  suppressHydrationWarning
                   className="w-full px-2 py-1 rounded border border-border text-sm"
                 />
               </div>
               <button
                 onClick={() => handleRemoveItem(item.itemId)}
+                suppressHydrationWarning
                 className="p-2 text-muted-foreground hover:text-status-error transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
@@ -319,6 +327,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
           onClick={handleSubmit}
           label="Submit Request"
           variant="primary"
+          suppressHydrationWarning
         />
       </div>
     </div>
