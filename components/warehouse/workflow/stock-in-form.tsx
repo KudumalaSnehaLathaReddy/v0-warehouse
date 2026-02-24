@@ -38,7 +38,7 @@ export const StockInForm: React.FC = () => {
     }
 
     addStockInRequest({
-      productId: formData.productId || `prod-${Date.now()}`,
+      productId: formData.productId || `prod-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       productName: formData.productName,
       productSKU: formData.productSKU,
       quantity,

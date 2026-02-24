@@ -44,8 +44,17 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [selectedStockInRequest, setSelectedStockInRequest] = useState<StockInRequest | null>(null);
   const [selectedStockOutRequest, setSelectedStockOutRequest] = useState<StockOutRequest | null>(null);
 
-  // Generate GRN
-  const generateGRN = (requestId: string): GRN => {
+  // Generate GRN - Only on client
+  const generateGRN = useCallback((requestId: string): GRN => {
+    if (typeof window === 'undefined') {
+      // Server-side fallback
+      return {
+        id: `grn-${requestId}`,
+        requestId,
+        generatedAt: new Date(),
+        number: `GRN-PENDING`,
+      };
+    }
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
     const randomNum = Math.floor(Math.random() * 100000)
@@ -57,12 +66,16 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       generatedAt: now,
       number: `GRN-${dateStr}-${randomNum}`,
     };
-  };
+  }, []);
 
   // Stock In Methods
   const addStockInRequest = useCallback(
     (request: Omit<StockInRequest, 'id' | 'createdAt' | 'status'>) => {
-      const id = `stock-in-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Generate ID safely on client
+      const timestamp = typeof window !== 'undefined' ? Date.now() : 0;
+      const randomPart = typeof window !== 'undefined' ? Math.random().toString(36).substr(2, 9) : 'pending';
+      const id = `stock-in-${timestamp}-${randomPart}`;
+      
       const newRequest: StockInRequest = {
         ...request,
         id,
@@ -138,7 +151,11 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Stock Out Methods
   const addStockOutRequest = useCallback(
     (request: Omit<StockOutRequest, 'id' | 'createdAt' | 'status'>) => {
-      const id = `stock-out-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Generate ID safely on client
+      const timestamp = typeof window !== 'undefined' ? Date.now() : 0;
+      const randomPart = typeof window !== 'undefined' ? Math.random().toString(36).substr(2, 9) : 'pending';
+      const id = `stock-out-${timestamp}-${randomPart}`;
+      
       const newRequest: StockOutRequest = {
         ...request,
         id,

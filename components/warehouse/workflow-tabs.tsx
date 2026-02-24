@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { WarehouseCanvas } from './warehouse-canvas';
 import { StockInForm } from './workflow/stock-in-form';
 import { StockInApproval } from './workflow/stock-in-approval';
@@ -21,11 +21,17 @@ interface WarehouseStateRef {
 }
 
 export const WorkflowTabs: React.FC = () => {
+  const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('layout');
   const warehouseStateRef = useRef<WarehouseStateRef>({
     nodes: [],
     storageMap: new Map(),
   });
+
+  // Ensure client-side rendering
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Extract structures from nodes
   const structures = useMemo(() => {
@@ -43,6 +49,16 @@ export const WorkflowTabs: React.FC = () => {
   const handleWarehouseStateUpdate = (newNodes: Node[], newStorageMap: Map<string, StorageData>) => {
     warehouseStateRef.current = { nodes: newNodes, storageMap: newStorageMap };
   };
+
+  if (!isClient) {
+    return (
+      <div className="w-full h-screen flex flex-col bg-gray-50">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">Loading warehouse system...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-screen flex flex-col bg-gray-50">
