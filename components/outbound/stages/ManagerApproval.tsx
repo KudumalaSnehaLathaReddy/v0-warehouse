@@ -66,12 +66,12 @@ export function ManagerApproval({ request, onApprove, onReject }: ManagerApprova
   }
 
   const columns = [
-    { key: 'sku', label: 'SKU', width: '15%' },
-    { key: 'productName', label: 'Product Name', width: '30%' },
-    { key: 'requestedQty', label: 'Requested Qty', width: '15%' },
-    { key: 'pickedQty', label: 'Picked Qty', width: '15%' },
+    { id: 'sku' as const, label: 'SKU', width: '15%' },
+    { id: 'productName' as const, label: 'Product Name', width: '30%' },
+    { id: 'requestedQty' as const, label: 'Requested Qty', width: '15%' },
+    { id: 'pickedQty' as const, label: 'Picked Qty', width: '15%' },
     {
-      key: 'status',
+      id: 'status' as const,
       label: 'Status',
       width: '15%',
       render: (value: any) => (
