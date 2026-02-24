@@ -102,7 +102,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" suppressHydrationWarning>
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">Create Outbound Request</h2>
@@ -153,6 +153,7 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
               onChange={(e) =>
                 setFormData({ ...formData, orderNumber: e.target.value })
               }
+              suppressHydrationWarning
               className={`w-full px-3 py-2 rounded-lg border transition-colors ${
                 errors.orderNumber
                   ? 'border-status-error bg-red-50'
@@ -170,11 +171,12 @@ export function RequestCreation({ onRequestSubmit }: RequestCreationProps) {
             </label>
             <input
               type="text"
-              placeholder="Enter customer name"
+              placeholder="Customer/Warehouse"
               value={formData.customerName}
               onChange={(e) =>
                 setFormData({ ...formData, customerName: e.target.value })
               }
+              suppressHydrationWarning
               className={`w-full px-3 py-2 rounded-lg border transition-colors ${
                 errors.customerName
                   ? 'border-status-error bg-red-50'

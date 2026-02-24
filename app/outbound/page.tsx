@@ -3,5 +3,5 @@
 import { OutboundWorkflow } from '@/components/outbound/OutboundWorkflow';
 
 export default function OutboundPage() {
-  return <OutboundWorkflow />;
+  return <div suppressHydrationWarning><OutboundWorkflow /></div>;
 }
