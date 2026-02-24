@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Check, X, FileText, Copy } from 'lucide-react';
 import { OutboundRequest, PickingList, PickingLineItem } from '@/types/outbound';
 import { StatusBadge } from '@/components/inbound/shared/StatusBadge';
-import { DataTable } from '@/components/inbound/shared/DataTable';
+import { DataTable, Column } from '@/components/inbound/shared/DataTable';
 import { ActionButton } from '@/components/inbound/shared/ActionButton';
 
 interface ManagerApprovalProps {
@@ -65,13 +65,13 @@ export function ManagerApproval({ request, onApprove, onReject }: ManagerApprova
     return <div className="text-center py-8">Generating picking list...</div>;
   }
 
-  const columns = [
-    { id: 'sku' as const, label: 'SKU', width: '15%' },
-    { id: 'productName' as const, label: 'Product Name', width: '30%' },
-    { id: 'requestedQty' as const, label: 'Requested Qty', width: '15%' },
-    { id: 'pickedQty' as const, label: 'Picked Qty', width: '15%' },
+  const columns: Column<PickingLineItem>[] = [
+    { id: 'sku', label: 'SKU', width: '15%' },
+    { id: 'productName', label: 'Product Name', width: '30%' },
+    { id: 'requestedQty', label: 'Requested Qty', width: '15%' },
+    { id: 'pickedQty', label: 'Picked Qty', width: '15%' },
     {
-      id: 'status' as const,
+      id: 'status',
       label: 'Status',
       width: '15%',
       render: (value: any) => (
