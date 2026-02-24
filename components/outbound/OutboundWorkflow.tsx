@@ -121,7 +121,7 @@ export function OutboundWorkflow() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       {/* Header */}
       <div className="sticky top-0 z-40 bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -161,7 +161,7 @@ export function OutboundWorkflow() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8" suppressHydrationWarning>
         {/* Stage 0: Request Creation */}
         {state.currentStage === 0 && (
           <RequestCreation onRequestSubmit={handleRequestSubmit} />

@@ -165,7 +165,7 @@ export const InboundWorkflow: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       {/* Header */}
       <div className="bg-gradient-to-r from-accent/10 to-accent-secondary/10 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -188,7 +188,7 @@ export const InboundWorkflow: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8" suppressHydrationWarning>
         {workflowState.currentStage === 'completed' ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-6 text-center">
             <div className="w-24 h-24 rounded-full bg-status-success/20 flex items-center justify-center">
