@@ -137,3 +137,69 @@ export const BIN_CAPACITIES: Record<BinSize, number> = {
 };
 
 export const GRID_SIZE = 10;
+
+// Workflow Types
+export type RotationStrategy = "FIFO" | "FEFO" | "LIFO";
+export type RequestStatus = "pending" | "approved" | "rejected" | "completed";
+
+export interface GRN {
+  id: string;
+  requestId: string;
+  generatedAt: Date;
+  number: string; // GRN-YYYYMMDD-XXXXX
+}
+
+export interface StockInRequest {
+  id: string;
+  productId: string;
+  productName: string;
+  productSKU: string;
+  quantity: number;
+  receivedFrom: string;
+  status: RequestStatus;
+  createdAt: Date;
+  approvedAt?: Date;
+  approvedBy?: string;
+  rejectionReason?: string;
+  grn?: GRN;
+  assignedCoordinates?: StorageCoordinate[];
+  rotationStrategy?: RotationStrategy;
+}
+
+export interface StockOutRequest {
+  id: string;
+  productId: string;
+  productName: string;
+  productSKU: string;
+  quantity: number;
+  destination: string;
+  reason: "sale" | "return" | "damage" | "relocation";
+  status: RequestStatus;
+  createdAt: Date;
+  approvedAt?: Date;
+  approvedBy?: string;
+  rejectionReason?: string;
+  removedFrom?: StorageCoordinate[];
+}
+
+export interface StorageCoordinate {
+  structureId: string;
+  levelIndex: number;
+  partitionIndex: number;
+  quantity: number;
+  productId?: string;
+  assignedAt?: Date;
+}
+
+export interface PartitionCapacity {
+  used: number;
+  total: number;
+  utilization: number; // percentage
+}
+
+export interface LevelCapacity {
+  partitions: PartitionCapacity[];
+  used: number;
+  total: number;
+  utilization: number; // percentage
+}

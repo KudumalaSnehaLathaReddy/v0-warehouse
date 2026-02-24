@@ -1,12 +1,15 @@
 "use client";
 
 import { ReactFlowProvider } from "@xyflow/react";
-import { WarehouseCanvas } from "@/components/warehouse/warehouse-canvas";
+import { WorkflowTabs } from "@/components/warehouse/workflow-tabs";
+import { WorkflowProvider } from "@/context/workflow-context";
 
 export default function Page() {
   return (
-    <ReactFlowProvider>
-      <WarehouseCanvas />
-    </ReactFlowProvider>
+    <WorkflowProvider>
+      <ReactFlowProvider>
+        <WorkflowTabs />
+      </ReactFlowProvider>
+    </WorkflowProvider>
   );
 }
