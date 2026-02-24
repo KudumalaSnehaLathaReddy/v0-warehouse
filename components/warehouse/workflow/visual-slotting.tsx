@@ -16,7 +16,7 @@ export const VisualSlotting: React.FC<VisualSlottingProps> = ({ structures, stor
   const [confirmed, setConfirmed] = useState(false);
 
   const assignments = useMemo(() => {
-    if (!selectedStockInRequest || !selectedStockInRequest.status.includes('approved')) {
+    if (!selectedStockInRequest || selectedStockInRequest.status !== 'approved') {
       return [];
     }
 
@@ -58,6 +58,17 @@ export const VisualSlotting: React.FC<VisualSlottingProps> = ({ structures, stor
 
   const totalAssignedQuantity = assignments.reduce((sum, a) => sum + a.quantity, 0);
   const assignmentCoverage = (totalAssignedQuantity / selectedStockInRequest.quantity) * 100;
+
+  const structureAssignments = useMemo(() => {
+    const grouped = new Map<string, StorageCoordinate[]>();
+    assignments.forEach((a) => {
+      if (!grouped.has(a.structureId)) {
+        grouped.set(a.structureId, []);
+      }
+      grouped.get(a.structureId)!.push(a);
+    });
+    return grouped;
+  }, [assignments]);
 
   return (
     <div className="w-full space-y-6">
@@ -118,8 +129,56 @@ export const VisualSlotting: React.FC<VisualSlottingProps> = ({ structures, stor
           </div>
         </div>
 
+        {/* Warehouse Grid Visualization */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Warehouse Layout with Assignments</h3>
+          <div className="space-y-4">
+            {structures.map((structure) => (
+              <div key={structure.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="flex justify-between items-center mb-3">
+                  <p className="font-semibold text-gray-900">{structure.name || `Structure: ${structure.id}`}</p>
+                  <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                    Capacity: {structure.partitionCapacity} units
+                  </span>
+                </div>
+                
+                {/* Levels and Partitions Grid */}
+                <div className="space-y-2">
+                  {Array.from({ length: structure.levels }).map((_, levelIndex) => (
+                    <div key={`level-${levelIndex}`} className="flex gap-2 flex-wrap">
+                      {Array.from({ length: structure.partitions }).map((_, partitionIndex) => {
+                        const assignment = structureAssignments
+                          .get(structure.id)
+                          ?.find((a) => a.levelIndex === levelIndex && a.partitionIndex === partitionIndex);
+                        
+                        return (
+                          <div
+                            key={`partition-${levelIndex}-${partitionIndex}`}
+                            className={`flex-1 min-w-24 p-3 rounded border-2 transition text-center ${
+                              assignment
+                                ? 'bg-green-100 border-green-500'
+                                : 'bg-white border-gray-300 hover:border-gray-400'
+                            }`}
+                          >
+                            <p className="text-xs text-gray-600">L{levelIndex + 1} P{partitionIndex + 1}</p>
+                            {assignment ? (
+                              <p className="text-sm font-semibold text-green-700">{assignment.quantity} units</p>
+                            ) : (
+                              <p className="text-xs text-gray-400">Empty</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Assigned Locations</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Assignment Summary</h3>
 
           {assignments.length === 0 ? (
             <p className="text-sm text-gray-500">No assignments available with current strategy</p>

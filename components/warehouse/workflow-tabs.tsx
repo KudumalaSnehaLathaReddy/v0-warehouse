@@ -91,7 +91,8 @@ export const WorkflowTabs: React.FC = () => {
 
         {activeTab === 'stock-in' && (
           <div className="w-full h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto">
+            {/* Top section: Request form and approval */}
+            <div className="flex-shrink-0 border-b border-gray-200 bg-white overflow-y-auto max-h-80">
               <div className="p-6 space-y-6">
                 <div className="grid grid-cols-3 gap-6">
                   <div className="col-span-2 space-y-6">
@@ -104,9 +105,17 @@ export const WorkflowTabs: React.FC = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Bottom section: Visual slotting with full height */}
             {structures.length > 0 && (
-              <div className="border-t border-gray-200 bg-white p-6 max-h-96 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
                 <VisualSlotting structures={structures} storageMap={warehouseStateRef.current.storageMap} />
+              </div>
+            )}
+            
+            {structures.length === 0 && (
+              <div className="flex-1 flex items-center justify-center text-gray-500">
+                <p>Create a warehouse layout first before processing stock in requests</p>
               </div>
             )}
           </div>
@@ -114,7 +123,8 @@ export const WorkflowTabs: React.FC = () => {
 
         {activeTab === 'stock-out' && (
           <div className="w-full h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto">
+            {/* Top section: Request form and approval */}
+            <div className="flex-shrink-0 border-b border-gray-200 bg-white overflow-y-auto max-h-80">
               <div className="p-6 space-y-6">
                 <div className="grid grid-cols-3 gap-6">
                   <div className="col-span-2 space-y-6">
@@ -127,9 +137,17 @@ export const WorkflowTabs: React.FC = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Bottom section: Removal with full height */}
             {structures.length > 0 && (
-              <div className="border-t border-gray-200 bg-white p-6 max-h-96 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
                 <StockOutRemoval structures={structures} storageMap={warehouseStateRef.current.storageMap} />
+              </div>
+            )}
+            
+            {structures.length === 0 && (
+              <div className="flex-1 flex items-center justify-center text-gray-500">
+                <p>Create a warehouse layout first before processing stock out requests</p>
               </div>
             )}
           </div>

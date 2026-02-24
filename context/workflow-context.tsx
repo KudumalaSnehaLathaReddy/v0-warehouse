@@ -225,9 +225,6 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Capacity tracking (placeholder - will be integrated with main warehouse state)
   const updateStructureCapacity = useCallback(
     (structureId: string, levelIndex: number, partitionIndex: number, quantity: number, operation: 'add' | 'subtract') => {
-      console.log(
-        `[v0] Updating capacity - Structure: ${structureId}, Level: ${levelIndex}, Partition: ${partitionIndex}, Quantity: ${quantity}, Op: ${operation}`
-      );
       // This will be connected to the main warehouse state management
     },
     []
