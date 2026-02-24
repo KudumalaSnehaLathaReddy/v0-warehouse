@@ -163,7 +163,8 @@ export function ManagerApproval({ request, onApprove, onReject }: ManagerApprova
           <DataTable
             data={pickingList.items}
             columns={columns}
-            searchKey="sku"
+            keyExtractor={(row, index) => `${row.sku}-${index}`}
+            searchableFields={['sku', 'productName']}
           />
         </div>
       </div>
