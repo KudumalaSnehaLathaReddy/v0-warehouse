@@ -83,26 +83,26 @@ export const WorkflowTabs: React.FC = () => {
 
         {activeTab === 'stock-in' && (
           <>
-            <WorkflowSidePanel mode="stock-in" />
-            <div className="w-full h-full" style={{ marginLeft: 0 }}>
-              <WorkflowCanvas
-                mode="stock-in"
-                nodes={warehouseStateRef.current.nodes}
-                storageMap={warehouseStateRef.current.storageMap}
-              />
+            <WorkflowSidePanel 
+              mode="stock-in" 
+              structures={structures}
+              storageMap={warehouseStateRef.current.storageMap}
+            />
+            <div className="w-full h-full">
+              <WorkflowCanvas mode="stock-in" />
             </div>
           </>
         )}
 
         {activeTab === 'stock-out' && (
           <>
-            <WorkflowSidePanel mode="stock-out" />
-            <div className="w-full h-full" style={{ marginLeft: 0 }}>
-              <WorkflowCanvas
-                mode="stock-out"
-                nodes={warehouseStateRef.current.nodes}
-                storageMap={warehouseStateRef.current.storageMap}
-              />
+            <WorkflowSidePanel 
+              mode="stock-out" 
+              structures={structures}
+              storageMap={warehouseStateRef.current.storageMap}
+            />
+            <div className="w-full h-full">
+              <WorkflowCanvas mode="stock-out" />
             </div>
           </>
         )}
