@@ -1,11 +1,8 @@
-"use client";
-
 import type { Node } from "@xyflow/react";
 import {
   Warehouse,
   MapPin,
   Building2,
-  Archive,
   Settings,
   ChevronDown,
   ChevronRight,
@@ -17,20 +14,25 @@ import { useState } from "react";
 import { WarehouseForm } from "./forms/warehouse-form";
 import { ZoneForm } from "./forms/zone-form";
 import { StructureForm } from "./forms/structure-form";
-import { StorageForm } from "./forms/storage-form";
+import { PartitionForm } from "./forms/partition-form";
 import { NodeEditForm } from "./forms/node-edit-form";
 import type {
   WarehouseData,
   ElementData,
   ZoneType,
   StructureType,
-  StorageData,
   ZoneData,
   StructureData,
-  BinSize,
+  Partition,
+  StockInRequest,
+  RotationStrategy,
 } from "./types";
+import { StockInForm } from "./forms/stock-in-form";
+import { StockInApproval } from "./forms/stock-in-approval";
+import { VisualSlotting } from "./forms/visual-slotting";
+import { generateGRN } from "./utils";
 
-type SidebarSection = "elements" | "zones" | "structures" | "storage" | "settings" | null;
+type SidebarSection = "elements" | "zones" | "structures" | "settings" | null;
 
 interface SidePanelProps {
   isOpen: boolean;
@@ -38,6 +40,8 @@ interface SidePanelProps {
   warehouseData: WarehouseData | null;
   selectedNode: Node | null;
   isEditingWarehouse: boolean;
+  selectedPartition: { partition: Partition; structureId: string; levelId: string } | null;
+  onSelectPartition: (partition: { partition: Partition; structureId: string; levelId: string } | null) => void;
   onCreateWarehouse: (data: {
     name: string;
     width: number;
@@ -62,32 +66,25 @@ interface SidePanelProps {
     type: StructureType,
     formData?: {
       name?: string;
+      code?: string;
       width?: number;
       height?: number;
-      levels?: number;
-      partitions?: number;
+      levelConfigs?: Array<{ name: string; code: string; height: number; partitionCount: number }>;
       color?: string;
-    }
-  ) => void;
-  onAddStorage: (
-    type: StorageData["storageType"],
-    zoneId: string,
-    formData?: {
-      name?: string;
-      width?: number;
-      height?: number;
-      depth?: number;
-      color?: string;
-      shelfCount?: number;
-      shelfCapacity?: number;
-      binCapacity?: number;
-      binSize?: BinSize;
+      zoneId?: string;
     }
   ) => void;
   onCloseEdit: () => void;
   onExportJSON: () => void;
   onImportJSON: (file: File) => void;
   zones: Node[];
+  structures?: Array<StructureData & Record<string, unknown>>;
+  stockInRequests?: StockInRequest[];
+  onCreateStockInRequest?: (request: Omit<StockInRequest, "id" | "createdAt" | "status">) => void;
+  onApproveStockInRequest?: (id: string, approverName: string) => void;
+  onRejectStockInRequest?: (id: string, reason: string) => void;
+  onSelectStockInRequest?: (id: string) => void;
+  selectedStockInRequestId?: string;
 }
 
 export function SidePanel({
@@ -96,28 +93,36 @@ export function SidePanel({
   warehouseData,
   selectedNode,
   isEditingWarehouse,
+  selectedPartition,
+  onSelectPartition,
   onCreateWarehouse,
   onUpdateNode,
   onAddElement,
   onAddZone,
   onAddStructure,
-  onAddStorage,
   onCloseEdit,
   onExportJSON,
   onImportJSON,
   zones,
+  structures = [],
+  stockInRequests = [],
+  onCreateStockInRequest,
+  onApproveStockInRequest,
+  onRejectStockInRequest,
+  onSelectStockInRequest,
+  selectedStockInRequestId,
 }: SidePanelProps) {
   const [openSection, setOpenSection] = useState<SidebarSection>(null);
   const [showZoneForm, setShowZoneForm] = useState(false);
   const [showStructureForm, setShowStructureForm] = useState(false);
-  const [showStorageForm, setShowStorageForm] = useState(false);
-  const [storageTargetZone, setStorageTargetZone] = useState<string>("");
+  const [selectedZoneForStructure, setSelectedZoneForStructure] = useState<string>("");
+  const [showStockIn, setShowStockIn] = useState(false);
+  const [selectedStrategy, setSelectedStrategy] = useState<RotationStrategy>("FIFO");
 
   const toggleSection = (section: SidebarSection) => {
     setOpenSection((prev) => (prev === section ? null : section));
     setShowZoneForm(false);
     setShowStructureForm(false);
-    setShowStorageForm(false);
   };
 
   const isEditing =
@@ -127,7 +132,6 @@ export function SidePanel({
   const selectedNodeData = selectedNode?.data as Record<string, unknown> | undefined;
   const isZoneEdit = selectedNode?.type === "zone";
   const isStructureEdit = selectedNode?.type === "structure";
-  const isStorageEdit = selectedNode?.type === "storage";
 
   return (
     <aside
@@ -138,13 +142,73 @@ export function SidePanel({
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <Warehouse size={18} className="text-primary" />
         <h2 className="text-sm font-bold text-card-foreground">
-          Layout Designer
+          {showStockIn ? "Stock In Workflow" : "Layout Designer"}
         </h2>
+        {warehouseExists && (
+          <button
+            onClick={() => setShowStockIn(!showStockIn)}
+            className="ml-auto text-xs px-2 py-1 rounded bg-accent text-accent-foreground hover:bg-accent/80 transition"
+          >
+            {showStockIn ? "Back" : "Stock In"}
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        {/* Stock In Workflow Section */}
+        {showStockIn && warehouseExists && (
+          <div className="p-4 space-y-4">
+            {/* Create Stock In Request */}
+            <div>
+              <h3 className="text-xs font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                <span className="flex items-center justify-center w-5 h-5 bg-blue-600 text-white text-[10px] rounded-full">1</span>
+                Create Request
+              </h3>
+              <StockInForm
+                onSubmit={(request) => {
+                  onCreateStockInRequest?.(request);
+                }}
+              />
+            </div>
+
+            {/* Approval Section */}
+            <div className="border-t border-border pt-4">
+              <h3 className="text-xs font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                <span className="flex items-center justify-center w-5 h-5 bg-blue-600 text-white text-[10px] rounded-full">2</span>
+                Approvals
+              </h3>
+              <StockInApproval
+                requests={stockInRequests}
+                selectedRequestId={selectedStockInRequestId}
+                onSelectRequest={(id) => onSelectStockInRequest?.(id)}
+                onApprove={(id, name) => onApproveStockInRequest?.(id, name)}
+                onReject={(id, reason) => onRejectStockInRequest?.(id, reason)}
+              />
+            </div>
+
+            {/* Visual Slotting Section */}
+            {selectedStockInRequestId && stockInRequests.find((r) => r.id === selectedStockInRequestId)?.status === "approved" && (
+              <div className="border-t border-border pt-4">
+                <h3 className="text-xs font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                  <span className="flex items-center justify-center w-5 h-5 bg-green-600 text-white text-[10px] rounded-full">3</span>
+                  Assign Storage
+                </h3>
+                <VisualSlotting
+                  request={stockInRequests.find((r) => r.id === selectedStockInRequestId) || null}
+                  structures={structures}
+                  onSelectStrategy={(strategy) => setSelectedStrategy(strategy)}
+                  onAssignPartitions={(assignments) => {
+                    // Handle partition assignment
+                    console.log("[v0] Assigning partitions:", assignments);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Warehouse create / edit */}
-        {!warehouseExists && !isEditing && (
+        {!showStockIn && !warehouseExists && (
           <div className="p-4">
             <WarehouseForm onSubmit={onCreateWarehouse} />
           </div>
@@ -189,14 +253,41 @@ export function SidePanel({
             <StructureForm
               initialData={selectedNodeData as unknown as StructureData}
               onSubmit={(d) => {
+                const levels = d.levelConfigs.map((config) => ({
+                  id: `level-${Math.random().toString(36).substr(2, 9)}`,
+                  name: config.name,
+                  code: config.code,
+                  height: config.height,
+                  partitions: Array.from({ length: config.partitionCount }).map((_, idx) => ({
+                    id: `partition-${Math.random().toString(36).substr(2, 9)}`,
+                    name: `P${idx + 1}`,
+                    code: `P${idx + 1}`,
+                    width: Math.floor(d.width / config.partitionCount),
+                    max_capacity: 100,
+                    used_capacity: 0,
+                  })),
+                }));
+                
+                const totalCapacity = levels.reduce(
+                  (sum, level) =>
+                    sum +
+                    level.partitions.reduce(
+                      (partSum, part) => partSum + part.max_capacity,
+                      0
+                    ),
+                  0
+                );
+
                 onUpdateNode(selectedNode.id, {
                   label: d.name,
+                  code: d.code,
                   width: d.width,
                   height: d.height,
                   color: d.color,
                   structureType: d.structureType,
-                  levels: d.levels,
-                  partitions: d.partitions,
+                  levels,
+                  max_capacity: totalCapacity,
+                  used_capacity: 0,
                 });
                 onCloseEdit();
               }}
@@ -206,28 +297,33 @@ export function SidePanel({
           </div>
         )}
 
-        {isStorageEdit && selectedNode && (
-          <div className="p-4">
-            <StorageForm
-              initialData={selectedNodeData as unknown as StorageData}
-              onSubmit={(d) => {
-                onUpdateNode(selectedNode.id, {
-                  label: d.name,
-                  width: d.width,
-                  height: d.height,
-                  depth: d.depth,
-                  color: d.color,
-                  storageType: d.storageType,
-                  shelfCount: d.shelfCount,
-                  shelfCapacity: d.shelfCapacity,
-                  binCapacity: d.binCapacity,
-                  binSize: d.binSize,
-                  usedCapacity: d.usedCapacity,
+        {/* Partition editing */}
+        {selectedPartition && (
+          <div className="p-4 border-t border-border">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Partition Editor</h3>
+              <button
+                onClick={() => onSelectPartition(null)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+            <PartitionForm
+              partition={selectedPartition.partition as unknown as Partition}
+              onSubmit={(updatedPartition) => {
+                // Dispatch custom event to notify warehouse-canvas of partition update
+                const event = new CustomEvent("partition-updated", {
+                  detail: {
+                    structureId: selectedPartition.structureId,
+                    levelId: selectedPartition.levelId,
+                    partition: updatedPartition,
+                  },
                 });
-                onCloseEdit();
+                window.dispatchEvent(event);
+                onSelectPartition(null);
               }}
-              onClose={onCloseEdit}
-              isEdit
+              onClose={() => onSelectPartition(null)}
             />
           </div>
         )}
@@ -373,20 +469,63 @@ export function SidePanel({
               {openSection === "structures" && (
                 <div className="border-b border-border bg-accent/20 p-4">
                   {showStructureForm ? (
-                    <StructureForm
-                      onSubmit={(d) => {
-                        onAddStructure(d.structureType, {
-                          name: d.name,
-                          width: d.width,
-                          height: d.height,
-                          levels: d.levels,
-                          partitions: d.partitions,
-                          color: d.color,
-                        });
-                        setShowStructureForm(false);
-                      }}
-                      onClose={() => setShowStructureForm(false)}
-                    />
+                    <>
+                      {!selectedZoneForStructure ? (
+                        <div className="flex flex-col gap-2">
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Select Zone (Optional)
+                          </label>
+                          <select
+                            value={selectedZoneForStructure}
+                            onChange={(e) => setSelectedZoneForStructure(e.target.value)}
+                            className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="">Warehouse (No Zone)</option>
+                            {zones.map((z) => (
+                              <option key={z.id} value={z.id}>
+                                {(z.data as Record<string, unknown>).label as string}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => setShowStructureForm(true)}
+                            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                          >
+                            Continue
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowStructureForm(false);
+                              setSelectedZoneForStructure("");
+                            }}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <StructureForm
+                          initialZoneId={selectedZoneForStructure}
+                          onSubmit={(d) => {
+                            onAddStructure(d.structureType, {
+                              name: d.name,
+                              code: d.code,
+                              width: d.width,
+                              height: d.height,
+                              levelConfigs: d.levelConfigs,
+                              color: d.color,
+                              zoneId: selectedZoneForStructure,
+                            });
+                            setShowStructureForm(false);
+                            setSelectedZoneForStructure("");
+                          }}
+                          onClose={() => {
+                            setShowStructureForm(false);
+                            setSelectedZoneForStructure("");
+                          }}
+                        />
+                      )}
+                    </>
                   ) : (
                     <button
                       onClick={() => setShowStructureForm(true)}
@@ -394,78 +533,6 @@ export function SidePanel({
                     >
                       + New Structure
                     </button>
-                  )}
-                </div>
-              )}
-
-              {/* Create Storage */}
-              <button
-                onClick={() => toggleSection("storage")}
-                className="flex items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-accent/50"
-              >
-                <Archive size={16} className="text-amber-600" />
-                <span className="flex-1 text-sm font-medium text-foreground">
-                  Racks / Shelves / Bins
-                </span>
-                {openSection === "storage" ? (
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                ) : (
-                  <ChevronRight size={14} className="text-muted-foreground" />
-                )}
-              </button>
-              {openSection === "storage" && (
-                <div className="border-b border-border bg-accent/20 p-4">
-                  {zones.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">
-                      Create a zone first to add storage items.
-                    </p>
-                  ) : showStorageForm && storageTargetZone ? (
-                    <StorageForm
-                      onSubmit={(d) => {
-                        onAddStorage(d.storageType, storageTargetZone, {
-                          name: d.name,
-                          width: d.width,
-                          height: d.height,
-                          depth: d.depth,
-                          color: d.color,
-                          shelfCount: d.shelfCount,
-                          shelfCapacity: d.shelfCapacity,
-                          binCapacity: d.binCapacity,
-                          binSize: d.binSize,
-                        });
-                        setShowStorageForm(false);
-                        setStorageTargetZone("");
-                      }}
-                      onClose={() => {
-                        setShowStorageForm(false);
-                        setStorageTargetZone("");
-                      }}
-                    />
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs font-medium text-muted-foreground">
-                        Target Zone
-                      </label>
-                      <select
-                        value={storageTargetZone}
-                        onChange={(e) => setStorageTargetZone(e.target.value)}
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-                      >
-                        <option value="">Select a zone...</option>
-                        {zones.map((z) => (
-                          <option key={z.id} value={z.id}>
-                            {(z.data as Record<string, unknown>).label as string}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => setShowStorageForm(true)}
-                        disabled={!storageTargetZone}
-                        className="rounded-md border border-dashed border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        + New Storage Item
-                      </button>
-                    </div>
                   )}
                 </div>
               )}
