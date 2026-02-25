@@ -22,7 +22,7 @@ export const StockOutApproval: React.FC = () => {
 
   const handleApprove = (requestId: string) => {
     approveStockOutRequest(requestId, approverName);
-    selectStockOutRequest(null);
+    // Keep the request selected so user can proceed to removal interface
   };
 
   const handleReject = (requestId: string) => {
@@ -91,6 +91,16 @@ export const StockOutApproval: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Approval Success Message */}
+      {selectedStockOutRequest && selectedStockOutRequest.status === 'approved' && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-green-900 mb-2">✓ Request Approved</h3>
+          <p className="text-green-700">
+            Scroll down to the <strong>Stock Out Removal</strong> section to select the storage locations where you want to remove inventory from.
+          </p>
+        </div>
+      )}
 
       {/* Approval Details */}
       {selectedStockOutRequest && selectedStockOutRequest.status === 'pending' && (

@@ -16,7 +16,7 @@ export const StockInApproval: React.FC = () => {
 
   const handleApprove = (requestId: string) => {
     approveStockInRequest(requestId, approverName);
-    selectStockInRequest(null);
+    // Keep the request selected so user can proceed to visual slotting
   };
 
   const handleReject = (requestId: string) => {
@@ -74,6 +74,19 @@ export const StockInApproval: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Approval Success Message */}
+      {selectedStockInRequest && selectedStockInRequest.status === 'approved' && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-green-900 mb-2">✓ Request Approved</h3>
+          <p className="text-green-700 mb-4">
+            GRN <span className="font-mono font-semibold">{selectedStockInRequest.grn?.number}</span> has been generated.
+          </p>
+          <p className="text-green-700">
+            Scroll down to the <strong>Visual Slotting</strong> section to assign storage locations using your preferred rotation strategy (FIFO, FEFO, or LIFO).
+          </p>
+        </div>
+      )}
 
       {/* Approval Details */}
       {selectedStockInRequest && selectedStockInRequest.status === 'pending' && (
