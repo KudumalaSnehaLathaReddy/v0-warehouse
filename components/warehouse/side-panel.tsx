@@ -31,6 +31,7 @@ import { StockInForm } from "./forms/stock-in-form";
 import { StockInApproval } from "./forms/stock-in-approval";
 import { VisualSlotting } from "./forms/visual-slotting";
 import { generateGRN } from "./utils";
+import { useWorkflow } from "./workflow-context";
 
 type SidebarSection = "elements" | "zones" | "structures" | "settings" | null;
 
