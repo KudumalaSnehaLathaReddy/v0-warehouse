@@ -58,84 +58,94 @@ export const StockInForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Create Stock In Request</h2>
+    <div className="w-full bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-200 shadow-sm p-6">
+      <div className="mb-6">
+        <h2 className="text-lg font-bold text-gray-900">Tell us about the new items</h2>
+        <p className="text-sm text-gray-600 mt-1">Fill in the details of the products you're receiving</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-            <input
-              type="text"
-              name="productName"
-              value={formData.productName}
-              onChange={handleChange}
-              placeholder="e.g., Widget A"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product SKU *</label>
-            <input
-              type="text"
-              name="productSKU"
-              value={formData.productSKU}
-              onChange={handleChange}
-              placeholder="e.g., SKU-001"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
-            <input
-              type="number"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              placeholder="e.g., 100"
-              min="1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Received From *</label>
-            <input
-              type="text"
-              name="receivedFrom"
-              value={formData.receivedFrom}
-              onChange={handleChange}
-              placeholder="e.g., Supplier ABC"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Product Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Product ID (optional)</label>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">What is the product name?</label>
+            <span className="text-red-500">*</span>
+          </div>
           <input
             type="text"
-            name="productId"
-            value={formData.productId}
+            name="productName"
+            value={formData.productName}
             onChange={handleChange}
-            placeholder="Auto-generated if empty"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Example: Metal Chair, Wooden Table, etc."
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-base"
           />
+          <p className="text-xs text-gray-500 mt-1">Give it a simple, easy-to-remember name</p>
         </div>
 
-        <div className="flex gap-3 pt-4">
+        {/* Product SKU */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">Product code (SKU)</label>
+            <span className="text-red-500">*</span>
+          </div>
+          <input
+            type="text"
+            name="productSKU"
+            value={formData.productSKU}
+            onChange={handleChange}
+            placeholder="Example: SKU-001, or any unique code"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-base"
+          />
+          <p className="text-xs text-gray-500 mt-1">A unique identifier to track this product</p>
+        </div>
+
+        {/* Quantity */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">How many items are you receiving?</label>
+            <span className="text-red-500">*</span>
+          </div>
+          <input
+            type="number"
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleChange}
+            placeholder="Example: 50, 100, 500"
+            min="1"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-base"
+          />
+          <p className="text-xs text-gray-500 mt-1">Enter the total number of units</p>
+        </div>
+
+        {/* Received From */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">Who sent these items?</label>
+            <span className="text-red-500">*</span>
+          </div>
+          <input
+            type="text"
+            name="receivedFrom"
+            value={formData.receivedFrom}
+            onChange={handleChange}
+            placeholder="Example: Supplier ABC, Factory XYZ, Vendor Name"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition text-base"
+          />
+          <p className="text-xs text-gray-500 mt-1">The supplier or warehouse sending the products</p>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex gap-3 pt-4 border-t border-gray-200">
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition"
+            className="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-sm text-base"
           >
-            Create Request
+            Submit Request
           </button>
           {submitted && (
-            <span className="text-green-600 text-sm font-medium flex items-center">
-              Request created successfully!
-            </span>
+            <div className="flex-1 flex items-center justify-center bg-green-50 border-2 border-green-300 rounded-lg">
+              <span className="text-green-700 text-sm font-semibold">✓ Successfully submitted!</span>
+            </div>
           )}
         </div>
       </form>

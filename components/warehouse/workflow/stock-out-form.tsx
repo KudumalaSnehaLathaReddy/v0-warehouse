@@ -63,99 +63,126 @@ export const StockOutForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Create Stock Out Request</h2>
+    <div className="w-full bg-gradient-to-br from-orange-50 to-white rounded-lg border border-orange-200 shadow-sm p-6">
+      <div className="mb-6">
+        <h2 className="text-lg font-bold text-gray-900">Send items out of the warehouse</h2>
+        <p className="text-sm text-gray-600 mt-1">Tell us which items you need to remove and where they're going</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-            <input
-              type="text"
-              name="productName"
-              value={formData.productName}
-              onChange={handleChange}
-              placeholder="e.g., Widget A"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product SKU *</label>
-            <input
-              type="text"
-              name="productSKU"
-              value={formData.productSKU}
-              onChange={handleChange}
-              placeholder="e.g., SKU-001"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
-            <input
-              type="number"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              placeholder="e.g., 50"
-              min="1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Reason *</label>
-            <select
-              name="reason"
-              value={formData.reason}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="sale">Sale</option>
-              <option value="return">Return</option>
-              <option value="damage">Damage</option>
-              <option value="relocation">Relocation</option>
-            </select>
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Destination *</label>
-            <input
-              type="text"
-              name="destination"
-              value={formData.destination}
-              onChange={handleChange}
-              placeholder="e.g., Customer ABC or Warehouse B"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Product Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Product ID (optional)</label>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">Which product?</label>
+            <span className="text-red-500">*</span>
+          </div>
           <input
             type="text"
-            name="productId"
-            value={formData.productId}
+            name="productName"
+            value={formData.productName}
             onChange={handleChange}
-            placeholder="Auto-generated if empty"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Example: Metal Chair, Wooden Table, etc."
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition text-base"
           />
         </div>
 
-        <div className="flex gap-3 pt-4">
+        {/* Product SKU */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">Product code (SKU)</label>
+            <span className="text-red-500">*</span>
+          </div>
+          <input
+            type="text"
+            name="productSKU"
+            value={formData.productSKU}
+            onChange={handleChange}
+            placeholder="Example: SKU-001, or any unique code"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition text-base"
+          />
+        </div>
+
+        {/* Quantity */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">How many items to send out?</label>
+            <span className="text-red-500">*</span>
+          </div>
+          <input
+            type="number"
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleChange}
+            placeholder="Example: 10, 25, 50"
+            min="1"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition text-base"
+          />
+        </div>
+
+        {/* Reason */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">Why are you sending them out?</label>
+            <span className="text-red-500">*</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { value: 'sale', label: 'Selling (Sale)', icon: '🛒' },
+              { value: 'return', label: 'Customer Return' },
+              { value: 'damage', label: 'Damaged Items', icon: '⚠️' },
+              { value: 'relocation', label: 'Moving to another place', icon: '📦' },
+            ].map((option) => (
+              <label
+                key={option.value}
+                className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition ${
+                  formData.reason === option.value
+                    ? 'border-orange-500 bg-orange-50'
+                    : 'border-gray-300 hover:border-orange-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="reason"
+                  value={option.value}
+                  checked={formData.reason === option.value}
+                  onChange={handleChange}
+                  className="w-5 h-5 cursor-pointer"
+                />
+                <span className="text-sm font-medium text-gray-700">{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Destination */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-sm font-semibold text-gray-800">Where are they going?</label>
+            <span className="text-red-500">*</span>
+          </div>
+          <input
+            type="text"
+            name="destination"
+            value={formData.destination}
+            onChange={handleChange}
+            placeholder="Example: John's Store, Customer ABC, Warehouse B"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition text-base"
+          />
+          <p className="text-xs text-gray-500 mt-1">The person or place receiving these items</p>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex gap-3 pt-4 border-t border-gray-200">
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition"
+            className="flex-1 px-4 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition shadow-sm text-base"
           >
-            Create Stock Out Request
+            Submit Request
           </button>
           {submitted && (
-            <span className="text-green-600 text-sm font-medium flex items-center">
-              Request created successfully!
-            </span>
+            <div className="flex-1 flex items-center justify-center bg-green-50 border-2 border-green-300 rounded-lg">
+              <span className="text-green-700 text-sm font-semibold">✓ Successfully submitted!</span>
+            </div>
           )}
         </div>
       </form>
